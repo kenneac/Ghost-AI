@@ -25,3 +25,4 @@ Ensure all components match the existing dark theme in `globals.css`.
 - All components import without errors
 - `cn()` works properly
 - No default light styling appears
+
