@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 export type ProjectItem = {
   id: string;
@@ -47,6 +47,14 @@ function slugifyProjectName(value: string) {
   );
 }
 
+function createProjectId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `project-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export function useProjectDialogs() {
   const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
   const [dialogMode, setDialogMode] = useState<ProjectDialogMode | null>(null);
@@ -55,6 +63,8 @@ export function useProjectDialogs() {
   );
   const [formValue, setFormValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+  const activeSubmissionRef = useRef(0);
 
   const activeProject = useMemo(
     () => projects.find((project) => project.id === selectedProjectId) ?? null,
@@ -63,36 +73,42 @@ export function useProjectDialogs() {
 
   const slugPreview = useMemo(() => slugifyProjectName(formValue), [formValue]);
 
+  const invalidatePendingSubmission = () => {
+    activeSubmissionRef.current += 1;
+    isSubmittingRef.current = false;
+    setIsSubmitting(false);
+  };
+
   const openCreateDialog = () => {
+    invalidatePendingSubmission();
     setDialogMode("create");
     setSelectedProjectId(null);
     setFormValue("");
-    setIsSubmitting(false);
   };
 
   const openRenameDialog = (project: ProjectItem) => {
+    invalidatePendingSubmission();
     setDialogMode("rename");
     setSelectedProjectId(project.id);
     setFormValue(project.name);
-    setIsSubmitting(false);
   };
 
   const openDeleteDialog = (project: ProjectItem) => {
+    invalidatePendingSubmission();
     setDialogMode("delete");
     setSelectedProjectId(project.id);
     setFormValue("");
-    setIsSubmitting(false);
   };
 
   const closeDialog = () => {
+    invalidatePendingSubmission();
     setDialogMode(null);
     setSelectedProjectId(null);
     setFormValue("");
-    setIsSubmitting(false);
   };
 
   const submitDialog = async () => {
-    if (!dialogMode) {
+    if (!dialogMode || isSubmittingRef.current) {
       return;
     }
 
@@ -102,15 +118,22 @@ export function useProjectDialogs() {
       return;
     }
 
+    const submissionId = activeSubmissionRef.current + 1;
+    activeSubmissionRef.current = submissionId;
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
 
     await new Promise((resolve) => {
       window.setTimeout(resolve, 150);
     });
 
+    if (submissionId !== activeSubmissionRef.current) {
+      return;
+    }
+
     if (dialogMode === "create") {
       const newProject: ProjectItem = {
-        id: `project-${Date.now()}`,
+        id: createProjectId(),
         name: trimmedName,
         slug: slugifyProjectName(trimmedName),
         isOwner: true,

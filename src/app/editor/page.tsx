@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { ProjectSidebar } from "@/components/editor/project-sidebar";
@@ -11,6 +11,9 @@ import { useProjectDialogs } from "@/components/editor/use-project-dialogs";
 
 export default function EditorPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const lastFocusedTriggerRef = useRef<HTMLElement | null>(null);
+
   const {
     projects,
     dialogMode,
@@ -34,6 +37,67 @@ export default function EditorPage() {
     await submitDialog();
   };
 
+  useEffect(() => {
+    if (!dialogMode || !dialogRef.current) {
+      return;
+    }
+
+    const focusableSelector =
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const dialogElement = dialogRef.current;
+    const focusableItems = Array.from(
+      dialogElement.querySelectorAll<HTMLElement>(focusableSelector),
+    );
+
+    const targetFocusable = isDeleteDialog
+      ? (focusableItems[focusableItems.length - 1] ??
+        focusableItems[0] ??
+        dialogElement)
+      : (focusableItems[0] ?? dialogElement);
+
+    if (targetFocusable) {
+      targetFocusable.focus();
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeDialog();
+        return;
+      }
+
+      if (event.key !== "Tab" || focusableItems.length === 0) {
+        return;
+      }
+
+      const firstElement = focusableItems[0];
+      const lastElement = focusableItems[focusableItems.length - 1];
+      const activeElement = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey && activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    dialogElement.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      dialogElement.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [dialogMode, isDeleteDialog, closeDialog]);
+
+  useEffect(() => {
+    if (!dialogMode && lastFocusedTriggerRef.current) {
+      const trigger = lastFocusedTriggerRef.current;
+      requestAnimationFrame(() => trigger.focus());
+      lastFocusedTriggerRef.current = null;
+    }
+  }, [dialogMode]);
+
   return (
     <main className="min-h-screen bg-base text-copy-primary">
       <EditorNavbar
@@ -47,7 +111,10 @@ export default function EditorPage() {
         projects={projects}
         onCreateProject={openCreateDialog}
         onRenameProject={openRenameDialog}
-        onDeleteProject={openDeleteDialog}
+        onDeleteProject={(project, trigger) => {
+          lastFocusedTriggerRef.current = trigger ?? null;
+          openDeleteDialog(project);
+        }}
       />
 
       <div className="pt-16">
@@ -78,11 +145,20 @@ export default function EditorPage() {
 
       {dialogMode ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-surface-border bg-surface p-5 text-copy-primary shadow-2xl">
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="project-dialog-title"
+            className="w-full max-w-md rounded-3xl border border-surface-border bg-surface p-5 text-copy-primary shadow-2xl"
+          >
             {isCreateDialog ? (
               <>
                 <div className="mb-4">
-                  <h2 className="text-xl font-medium text-copy-primary">
+                  <h2
+                    id="project-dialog-title"
+                    className="text-xl font-medium text-copy-primary"
+                  >
                     Create project
                   </h2>
                 </div>
@@ -125,7 +201,10 @@ export default function EditorPage() {
             {isRenameDialog && activeProject ? (
               <>
                 <div className="mb-4">
-                  <h2 className="text-xl font-medium text-copy-primary">
+                  <h2
+                    id="project-dialog-title"
+                    className="text-xl font-medium text-copy-primary"
+                  >
                     Rename project
                   </h2>
                   <p className="mt-2 text-sm text-copy-secondary">
@@ -161,7 +240,10 @@ export default function EditorPage() {
             {isDeleteDialog && activeProject ? (
               <>
                 <div className="mb-4">
-                  <h2 className="text-xl font-medium text-copy-primary">
+                  <h2
+                    id="project-dialog-title"
+                    className="text-xl font-medium text-copy-primary"
+                  >
                     Delete project
                   </h2>
                   <p className="mt-2 text-sm text-copy-secondary">
