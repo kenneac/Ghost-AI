@@ -4,23 +4,23 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 02 (Editor Shell) — in progress
+- Feature 03 (Authentication) — in progress
 
 ## Current Goal
 
-- Feature 02: Build the editor chrome for all future editor screens, including the fixed navbar, floating project sidebar, and empty-state tab patterns required by the editor UI.
+- Feature 03: integrate Clerk into the app shell, set up public and protected routes, and add the sign-in and sign-up experiences matching the design spec.
 
 ## Completed
 
-- Created the editor navbar and project sidebar shell components.
+- The project has a working dark workspace shell and editor chrome foundation.
 
 ## In Progress
 
-- Feature 02: wire the editor shell into the app preview and verify the sidebar behavior and dark styling match the design spec.
+- Feature 03: configure Clerk provider, auth pages, route protection, redirect logic, and the editor navbar user menu.
 
 ## Next Up
 
-- Validate the editor shell compiles cleanly and is ready to be reused by later editor features.
+- Validate the auth flow compiles cleanly and the protected routes behave as specified.
 
 ## Open Questions
 
@@ -28,8 +28,8 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Architecture Decisions
 
-- The editor chrome uses a fixed top navbar and a floating left sidebar that does not push page content, matching the workspace shell pattern.
+- Authentication will be enforced at the app boundary using Clerk middleware and route-level checks, while the editor shell remains reusable and unchanged.
 
 ## Session Notes
 
-- The editor shell is being built as reusable primitives for future editor chapters; no actual dialog implementation was added, per the feature spec.
+- The Clerk setup is being implemented directly against the feature specification so the app can securely gate access to the workspace without adding custom auth flows.
