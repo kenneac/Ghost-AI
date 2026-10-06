@@ -4,23 +4,23 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 01 (Design System) — in progress
+- Feature 02 (Editor Shell) — in progress
 
 ## Current Goal
 
-- Feature 01: Install and configure shadcn/ui, add UI primitives (Button, Card, Dialog, Input, Tabs, Textarea, ScrollArea), install lucide-react, create lib/utils.ts cn() helper, and ensure components match the dark theme.
+- Feature 02: Build the editor chrome for all future editor screens, including the fixed navbar, floating project sidebar, and empty-state tab patterns required by the editor UI.
 
 ## Completed
 
-- Started Feature 01 and confirmed the required shadcn primitives and design-system dependencies.
+- Created the editor navbar and project sidebar shell components.
 
 ## In Progress
 
-- Feature 01: finalize the dark theme wiring, cn() helper, and app-level integration of the installed shadcn primitives.
+- Feature 02: wire the editor shell into the app preview and verify the sidebar behavior and dark styling match the design spec.
 
 ## Next Up
 
-- Verify the design-system primitives render cleanly and match the dark workspace styling without light-mode defaults.
+- Validate the editor shell compiles cleanly and is ready to be reused by later editor features.
 
 ## Open Questions
 
@@ -28,8 +28,8 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Architecture Decisions
 
-- The generated shadcn UI files will remain unmodified; app-level theme variables and helper logic will live in the project-level styling and utility files.
+- The editor chrome uses a fixed top navbar and a floating left sidebar that does not push page content, matching the workspace shell pattern.
 
 ## Session Notes
 
-- The required component set is installed and ready for app-level verification; local dark-theme and utility polish is being applied in the project shell.
+- The editor shell is being built as reusable primitives for future editor chapters; no actual dialog implementation was added, per the feature spec.

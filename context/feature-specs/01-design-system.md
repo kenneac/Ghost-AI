@@ -1,7 +1,11 @@
+### Before you start
 Read `AGENTS.md` before starting.
 
+### What this unit produce when it is done
 We're adding the design system and UI primitive components.
 
+
+### What you need to do
 Install and configure `shadcn/ui`.
 
 Add these shadcn components:
@@ -20,6 +24,7 @@ Also Install `lucide-react`.
 Create `lib/utils.ts` with a reusable `cn()` helper for merging Tailwind classes.
 
 Ensure all components match the existing dark theme in `globals.css`.
+
 
 ### Check when done
 - All components import without errors
