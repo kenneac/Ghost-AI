@@ -4,23 +4,24 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 03 (Authentication) — in progress
+- Feature 04 (Project Dialogs) — complete
 
 ## Current Goal
 
-- Feature 03: integrate Clerk into the app shell, set up public and protected routes, and add the sign-in and sign-up experiences matching the design spec.
+- Feature 04: add the editor home experience, project dialogs, and owner-only project actions while keeping the current editor shell and sidebar behavior intact.
 
 ## Completed
 
 - The project has a working dark workspace shell and editor chrome foundation.
+- Feature 04: editor home empty state, create/rename/delete project dialogs, live slug preview, and sidebar project actions for owned projects only.
 
 ## In Progress
 
-- Feature 03: configure Clerk provider, auth pages, route protection, redirect logic, and the editor navbar user menu.
+- None.
 
 ## Next Up
 
-- Validate the auth flow compiles cleanly and the protected routes behave as specified.
+- Move to the next feature or harden the current project dialog flow if additional product behavior is needed.
 
 ## Open Questions
 
