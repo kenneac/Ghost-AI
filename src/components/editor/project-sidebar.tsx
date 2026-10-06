@@ -13,7 +13,7 @@ type ProjectSidebarProps = {
   projects: ProjectItem[];
   onCreateProject: () => void;
   onRenameProject: (project: ProjectItem) => void;
-  onDeleteProject: (project: ProjectItem) => void;
+  onDeleteProject: (project: ProjectItem, trigger?: HTMLElement | null) => void;
 };
 
 export function ProjectSidebar({
@@ -62,7 +62,10 @@ export function ProjectSidebar({
           </div>
 
           <div className="flex min-h-0 flex-1 px-3 py-3">
-            <Tabs defaultValue="my-projects" className="flex h-full w-full flex-col">
+            <Tabs
+              defaultValue="my-projects"
+              className="flex h-full w-full flex-col"
+            >
               <TabsList className="grid w-full shrink-0 grid-cols-2 bg-subtle">
                 <TabsTrigger value="my-projects">My Projects</TabsTrigger>
                 <TabsTrigger value="shared">Shared</TabsTrigger>
@@ -108,7 +111,9 @@ export function ProjectSidebar({
                           size="icon-sm"
                           className="text-copy-primary hover:bg-base"
                           aria-label={`Delete ${project.name}`}
-                          onClick={() => onDeleteProject(project)}
+                          onClick={(event) =>
+                            onDeleteProject(project, event.currentTarget)
+                          }
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
