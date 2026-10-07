@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 04 (Project Dialogs) — complete
+- Feature 05 (Prisma models + client + migration) — in progress
 
 ## Current Goal
 
-- Feature 04: add the editor home experience, project dialogs, and owner-only project actions while keeping the current editor shell and sidebar behavior intact.
+- Feature 05: add the project metadata schema, Prisma client singleton, and first migration for project ownership, collaborator access, and status tracking.
 
 ## Completed
 
@@ -17,11 +17,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## In Progress
 
-- None.
+- Feature 05: Prisma schema definitions, cached client singleton, and the initial project migration.
 
 ## Next Up
 
-- Move to the next feature or harden the current project dialog flow if additional product behavior is needed.
+- Complete the Prisma schema and migration, then verify the application builds using the generated client.
 
 ## Open Questions
 
@@ -29,8 +29,8 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Architecture Decisions
 
-- Authentication will be enforced at the app boundary using Clerk middleware and route-level checks, while the editor shell remains reusable and unchanged.
+- Project metadata will live in PostgreSQL via Prisma, while the canvas JSON and generated specs remain stored outside the relational schema.
 
 ## Session Notes
 
-- The Clerk setup is being implemented directly against the feature specification so the app can securely gate access to the workspace without adding custom auth flows.
+- The Prisma setup is being implemented directly against the feature specification so the app can persist project ownership and collaborator metadata without adding any extra schema conventions.

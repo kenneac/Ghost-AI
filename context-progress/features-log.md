@@ -54,4 +54,34 @@ Copy this structure for every new feature:
 
 # Features
 
-_No features logged yet. The first entry goes below this line._
+### Feature 1: Prisma project metadata foundation
+
+**Date:** 2026-10-07
+
+**Description:** Added the initial project and collaborator schema, cached Prisma client singleton, and first migration for project ownership and collaborator access.
+
+#### New Files
+
+- `prisma/models/project.prisma`
+  - Defines the `ProjectStatus` enum, `Project`, and `ProjectCollaborator` models with the required relations and indexes.
+  - Keeps the project metadata aligned with the owner-ID and collaborator access model.
+
+- `lib/prisma.ts`
+  - Creates a cached Prisma client singleton with a `DATABASE_URL` branch for `prisma+postgres://` Accelerate URLs and direct Postgres adapters otherwise.
+  - Uses the project’s generated Prisma client and keeps hot-reload caching in development.
+
+- `prisma/migrations/20261007221316_add_project_models/migration.sql`
+  - Applies the initial migration for the projects and project_collaborators tables.
+
+#### Updated Files
+
+- `prisma/schema.prisma`
+  - Keeps the Prisma v7 schema root and ensures the schema is valid with the project models in the Prisma folder.
+
+- `package.json`
+  - Adds `@prisma/extension-accelerate` required for the Prisma Postgres Accelerate branch.
+
+- `context-progress/progress-tracker.md`
+  - Marks the Prisma feature as in progress and updates the active goal and session notes for the current implementation step.
+
+---
