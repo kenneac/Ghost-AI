@@ -208,3 +208,23 @@ Copy this structure for every new feature:
   - Opens the Share dialog from the workspace navbar button.
 
 ---
+
+### Feature 6: Sidebar project navigation fix
+
+**Date:** 2026-10-08
+
+**Description:** Fixed the editor home sidebar so existing projects can be opened immediately. Project names now link to their project workspace from both the home page and workspace sidebar.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `src/components/editor/project-sidebar.tsx`
+  - Renders project names as workspace links in both sidebar contexts.
+  - Closes the sidebar after selection and marks the active workspace link.
+- `context-progress/progress-tracker.md`
+  - Records the confirmed cause and completed navigation fix.
+
+---

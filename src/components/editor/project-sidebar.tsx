@@ -96,11 +96,14 @@ export function ProjectSidebar({
                       )}
                     >
                       <div className="min-w-0">
-                        {workspaceNavigation ? (
-                          <Link href={`/editor/${encodeURIComponent(project.id)}`} className="block truncate text-sm font-medium text-copy-primary hover:text-brand">{project.name}</Link>
-                        ) : (
-                          <div className="truncate text-sm font-medium text-copy-primary">{project.name}</div>
-                        )}
+                        <Link
+                          href={`/editor/${encodeURIComponent(project.id)}`}
+                          aria-current={activeProjectId === project.id ? "page" : undefined}
+                          onClick={onClose}
+                          className="block truncate text-sm font-medium text-copy-primary hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        >
+                          {project.name}
+                        </Link>
                         <div className="truncate text-xs text-copy-muted">
                           {project.slug}
                         </div>
