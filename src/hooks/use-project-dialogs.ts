@@ -28,16 +28,12 @@ function slugifyProjectName(value: string) {
   );
 }
 
-function createRoomSuffix() {
-  return Math.random().toString(36).slice(2, 8);
-}
-
 function getActiveProjectIdFromLocation() {
   if (typeof window === "undefined") {
     return null;
   }
 
-  return new URLSearchParams(window.location.search).get("projectId");
+  return decodeURIComponent(window.location.pathname.split("/").filter(Boolean).at(-1) ?? "");
 }
 
 export function useProjectDialogs({
@@ -146,7 +142,6 @@ export function useProjectDialogs({
         }
 
         const createdProject = payload.project as ProjectItem;
-        const roomId = `${slugifyProjectName(trimmedName)}-${createRoomSuffix()}`;
 
         setProjectLists([
           {
@@ -158,9 +153,7 @@ export function useProjectDialogs({
         ]);
 
         closeDialog();
-        router.push(
-          `/editor?projectId=${encodeURIComponent(createdProject.id)}&roomId=${encodeURIComponent(roomId)}`,
-        );
+        router.push(`/editor/${encodeURIComponent(createdProject.id)}`);
         return;
       }
 

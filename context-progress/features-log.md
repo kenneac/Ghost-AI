@@ -54,6 +54,7 @@ Copy this structure for every new feature:
 
 # Features
 
+
 ### Feature 1: Prisma project metadata foundation
 
 **Date:** 2026-10-07
@@ -150,5 +151,186 @@ Copy this structure for every new feature:
   - Why: the editor home and existing imports now resolve to the API-backed hook path.
 - `context-progress/progress-tracker.md`
   - Marks Feature 07 as completed and records the final implementation and verification status.
+
+---
+
+### Feature 4: Editor workspace shell
+
+**Date:** 2026-10-08
+
+**Description:** Added the authenticated `/editor/[roomId]` workspace shell with server-side owner and collaborator access checks, a dedicated access-denied state, project context in the navbar, current-project sidebar navigation, a canvas placeholder, and an AI sidebar placeholder. Project creation now navigates to the project-scoped workspace URL.
+
+#### New Files
+
+- `src/app/editor/[roomId]/page.tsx`
+  - Resolves the project from the route segment, redirects signed-out users, and renders access denied for missing or unauthorized projects.
+- `src/components/editor/access-denied.tsx`
+  - Shows a centered lock state and a link back to `/editor`.
+- `src/components/editor/editor-workspace.tsx`
+  - Composes the workspace navbar, project sidebar, canvas placeholder, and toggleable AI sidebar placeholder.
+- `src/lib/project-access.ts`
+  - Resolves Clerk identity and checks project access by owner ID or primary email collaborator membership.
+
+#### Updated Files
+
+- `src/components/editor/editor-navbar.tsx`
+  - Adds optional project title and workspace action slots for Share and AI controls.
+- `src/components/editor/project-sidebar.tsx`
+  - Adds active-project highlighting and workspace navigation links.
+- `src/hooks/use-project-dialogs.ts`
+  - Routes created projects to `/editor/{projectId}` and detects the active project from the path when deleting.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 08 complete and records the room-to-project mapping decision and remaining open question.
+
+---
+
+### Feature 5: Share dialog and collaborator management
+
+**Date:** 2026-10-08
+
+**Description:** Added project sharing from the editor workspace. Owners can invite and remove collaborators, while project members can view the collaborator list; Clerk profiles enrich collaborator emails when available, and users can copy the project link.
+
+#### New Files
+
+- `src/app/api/projects/[projectId]/collaborators/route.ts`
+  - Lists collaborators for project members and enriches matching emails with Clerk names and avatars.
+  - Adds owner-only invite and removal handlers with input validation.
+- `src/components/editor/share-dialog.tsx`
+  - Renders collaborator profiles and owner-only invite/removal controls.
+  - Copies the workspace URL and shows temporary `Copied!` feedback.
+
+#### Updated Files
+
+- `context/feature-specs/09-share-dialog.md`
+  - Tracks the feature status as completed.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 09 completed and records the implementation and build verification.
+- `src/components/editor/editor-workspace.tsx`
+  - Opens the Share dialog from the workspace navbar button.
+
+---
+
+### Feature 6: Sidebar project navigation fix
+
+**Date:** 2026-10-08
+
+**Description:** Fixed the editor home sidebar so existing projects can be opened immediately. Project names now link to their project workspace from both the home page and workspace sidebar.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `src/components/editor/project-sidebar.tsx`
+  - Renders project names as workspace links in both sidebar contexts.
+  - Closes the sidebar after selection and marks the active workspace link.
+- `context-progress/progress-tracker.md`
+  - Records the confirmed cause and completed navigation fix.
+
+---
+### Feature 10: Liveblocks setup
+
+**Date:** 2026-10-08
+
+**Description:** Added the typed Liveblocks presence and user metadata contract, a cached server client, deterministic per-user cursor colors, and an authenticated endpoint that checks project access before creating a private project room and issuing a session token.
+
+#### New Files
+
+- `lib/liveblocks.ts`
+  - Caches the Liveblocks node client and deterministically maps Clerk user IDs to a fixed cursor-color palette.
+- `src/app/api/liveblocks-auth/route.ts`
+  - Authenticates callers, validates the requested project room, checks owner/collaborator access, ensures a private room exists, and returns a token with name, avatar, and cursor color.
+
+#### Updated Files
+
+- `liveblocks.config.ts`
+  - Defines cursor position and `isThinking` presence plus user ID, display name, avatar URL, and cursor color metadata.
+- `context-progress/progress-tracker.md`
+  - Records Feature 10 implementation and the outstanding dependency/build verification blocker.
+
+#### Verification
+
+- `npm run build` and `npx tsc --noEmit` did not complete in this environment.
+- `@liveblocks/node` is absent from the installed dependencies; `npm install @liveblocks/node` stalled because npm registry access is unavailable. Re-run installation and build verification with registry access.
+
+---
+### Feature 12: Shape panel
+
+**Date:** 2026-10-08
+
+Added a floating bottom-center shape toolbar to the shared canvas. Users can drag any of the six supported shapes onto the canvas; drops create shared `canvasNode` nodes at the corresponding flow coordinates with default dimensions/color and an empty label. The custom node renderer displays a simple bordered rectangle as specified for this feature.
+
+#### New Files
+
+- `src/components/editor/shape-panel.tsx`
+  - Renders draggable buttons for rectangle, diamond, circle, pill, cylinder, and hexagon. Drag payloads include the shape name and default width/height.
+- `src/components/editor/canvas-node.tsx`
+  - Renders the `canvasNode` type as a centered, bordered rectangle with connection handles.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Registers the custom node renderer, handles shape drag-over/drop, converts screen positions to React Flow coordinates, and adds nodes through the Liveblocks flow state with shape/timestamp/counter IDs.
+- `src/types/canvas.ts`
+  - Exposes the supported node shape union for typed drag payloads.
+- `context-progress/progress-tracker.md`
+  - Records Feature 12 as implemented and notes verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` stalled during optimized compilation and was interrupted; a successful production build remains unverified.
+
+---
+### Feature 11: Base collaborative canvas
+
+**Date:** 2026-10-08
+
+Replaced the workspace canvas placeholder with an empty React Flow graph synchronized through Liveblocks. The workspace page remains a Server Component, while a client room wrapper provides Liveblocks auth, room presence, loading feedback, and connection status.
+
+#### New Files
+
+- `types/canvas.ts`
+  - Defines canvas node data, `canvasNode`/`canvasEdge` types, and the shared node color and shape constants.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Wraps the canvas in LiveblocksProvider and RoomProvider with the current project room and initial presence.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Connects React Flow to `useLiveblocksFlow` with empty initial state, loose connections, fitView, MiniMap, dot background, and connection feedback.
+
+#### Updated Files
+
+- `src/components/editor/editor-workspace.tsx`
+  - Replaces the static canvas placeholder with the project’s Liveblocks room canvas.
+- `context-progress/progress-tracker.md`
+  - Records Feature 11 implementation and outstanding verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run lint -- --no-cache` stalled after startup and was stopped.
+- `npm run build` remains unverified; the prior Liveblocks setup is missing `@liveblocks/node`, and registry access stalled during installation.
+
+---
+
+### Feature 13: Fix React Flow provider context error
+
+**Date:** 2026-10-08
+
+Fixed the editor canvas crash caused by calling `useReactFlow()` outside a `ReactFlowProvider` descendant. The provider now wraps the component that consumes React Flow hooks, keeping drop coordinate conversion and the rendered flow on the same context instance.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Split the flow into a provider wrapper and hook-using child to prevent the missing provider error.
+- `context-issues/plan-to-solve-current-issues.md`
+  - Replaced the old issue plan with the current root cause, fix plan, scope, and success criteria.
+- `context-progress/progress-tracker.md`
+  - Recorded the fix and verification status.
 
 ---

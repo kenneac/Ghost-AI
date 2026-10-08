@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { PanelLeftClose, PencilLine, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,9 @@ type ProjectSidebarProps = {
   onCreateProject: () => void;
   onRenameProject: (project: ProjectItem) => void;
   onDeleteProject: (project: ProjectItem, trigger?: HTMLElement | null) => void;
+  activeProjectId?: string;
+  workspaceNavigation?: boolean;
+
 };
 
 export function ProjectSidebar({
@@ -25,6 +29,8 @@ export function ProjectSidebar({
   onCreateProject,
   onRenameProject,
   onDeleteProject,
+  activeProjectId,
+  workspaceNavigation = false,
 }: ProjectSidebarProps) {
   return (
     <>
@@ -82,12 +88,22 @@ export function ProjectSidebar({
                   ownedProjects.map((project) => (
                     <div
                       key={project.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-surface-border bg-subtle px-3 py-3"
+                      className={cn(
+                        "flex items-center justify-between gap-3 rounded-2xl border px-3 py-3",
+                        activeProjectId === project.id
+                          ? "border-brand bg-accent-dim"
+                          : "border-surface-border bg-subtle",
+                      )}
                     >
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-medium text-copy-primary">
+                        <Link
+                          href={`/editor/${encodeURIComponent(project.id)}`}
+                          aria-current={activeProjectId === project.id ? "page" : undefined}
+                          onClick={onClose}
+                          className="block truncate text-sm font-medium text-copy-primary hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        >
                           {project.name}
-                        </div>
+                        </Link>
                         <div className="truncate text-xs text-copy-muted">
                           {project.slug}
                         </div>
@@ -134,12 +150,19 @@ export function ProjectSidebar({
                   sharedProjects.map((project) => (
                     <div
                       key={project.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-surface-border bg-subtle px-3 py-3"
+                      className={cn(
+                        "flex items-center justify-between gap-3 rounded-2xl border px-3 py-3",
+                        activeProjectId === project.id
+                          ? "border-brand bg-accent-dim"
+                          : "border-surface-border bg-subtle",
+                      )}
                     >
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-medium text-copy-primary">
-                          {project.name}
-                        </div>
+                        {workspaceNavigation ? (
+                          <Link href={`/editor/${encodeURIComponent(project.id)}`} className="block truncate text-sm font-medium text-copy-primary hover:text-brand">{project.name}</Link>
+                        ) : (
+                          <div className="truncate text-sm font-medium text-copy-primary">{project.name}</div>
+                        )}
                         <div className="truncate text-xs text-copy-muted">
                           {project.slug}
                         </div>
