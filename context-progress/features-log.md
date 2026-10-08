@@ -152,3 +152,33 @@ Copy this structure for every new feature:
   - Marks Feature 07 as completed and records the final implementation and verification status.
 
 ---
+
+### Feature 4: Editor workspace shell
+
+**Date:** 2026-10-08
+
+**Description:** Added the authenticated `/editor/[roomId]` workspace shell with server-side owner and collaborator access checks, a dedicated access-denied state, project context in the navbar, current-project sidebar navigation, a canvas placeholder, and an AI sidebar placeholder. Project creation now navigates to the project-scoped workspace URL.
+
+#### New Files
+
+- `src/app/editor/[roomId]/page.tsx`
+  - Resolves the project from the route segment, redirects signed-out users, and renders access denied for missing or unauthorized projects.
+- `src/components/editor/access-denied.tsx`
+  - Shows a centered lock state and a link back to `/editor`.
+- `src/components/editor/editor-workspace.tsx`
+  - Composes the workspace navbar, project sidebar, canvas placeholder, and toggleable AI sidebar placeholder.
+- `src/lib/project-access.ts`
+  - Resolves Clerk identity and checks project access by owner ID or primary email collaborator membership.
+
+#### Updated Files
+
+- `src/components/editor/editor-navbar.tsx`
+  - Adds optional project title and workspace action slots for Share and AI controls.
+- `src/components/editor/project-sidebar.tsx`
+  - Adds active-project highlighting and workspace navigation links.
+- `src/hooks/use-project-dialogs.ts`
+  - Routes created projects to `/editor/{projectId}` and detects the active project from the path when deleting.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 08 complete and records the room-to-project mapping decision and remaining open question.
+
+---
