@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 09 (share dialog) — completed
+- Feature 10 (Liveblocks setup) — implemented; verification blocked
 
 ## Current Goal
 
-- Continue with the next defined canvas feature after completing collaborator sharing.
+- Verify the Liveblocks implementation after installing `@liveblocks/node` in an environment with npm registry access.
 
 ## Completed
 
@@ -23,15 +23,17 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## In Progress
 
-- None.
+- Feature 10 implementation: Liveblocks typing, cached server client, deterministic cursor colors, and authenticated project room endpoint. `npm run build` and `npx tsc --noEmit` did not complete in this restricted environment; `@liveblocks/node` is not installed, and npm registry access stalled.
 
 ## Next Up
 
-- Resolve the durable room ID to project ID mapping as part of the canvas and collaboration feature.
+- Install `@liveblocks/node`, then run `npm run build` and resolve any type or build issues.
+- Continue canvas implementation after Liveblocks setup verifies.
 
 ## Open Questions
 
 - Feature 08 uses `/editor/[roomId]`, but no room-to-project mapping exists yet. The current route uses the project ID as the segment; canvas/collaboration work must define the durable room ID contract.
+- The Liveblocks node SDK is missing from the installed dependency tree even though the feature spec says required packages are already installed; npm registry access stalled while attempting installation.
 
 ## Architecture Decisions
 
@@ -45,6 +47,8 @@ Update this file whenever the current phase, active feature, or implementation s
 - The Feature 05 migration is applied to the configured database with `prisma migrate deploy`.
 
 ## Session Notes
+
+- Feature 10 implementation adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation. Build and type verification remain incomplete because installing `@liveblocks/node` stalled under restricted npm access and local build/typecheck processes did not finish.
 
 - Feature 09 uses the existing collaborator schema with no local user table or migration. The share dialog supports owner invites/removals, collaborator read-only listing, Clerk profile enrichment, and link copying; `npm run build` passes.
 - Sidebar project navigation issue confirmed: the editor home rendered project names as plain text because workspace navigation was disabled. Project names now link to `/editor/{projectId}` in both sidebar contexts.

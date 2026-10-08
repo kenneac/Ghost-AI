@@ -228,3 +228,29 @@ Copy this structure for every new feature:
   - Records the confirmed cause and completed navigation fix.
 
 ---
+### Feature 10: Liveblocks setup
+
+**Date:** 2026-10-08
+
+**Description:** Added the typed Liveblocks presence and user metadata contract, a cached server client, deterministic per-user cursor colors, and an authenticated endpoint that checks project access before creating a private project room and issuing a session token.
+
+#### New Files
+
+- `lib/liveblocks.ts`
+  - Caches the Liveblocks node client and deterministically maps Clerk user IDs to a fixed cursor-color palette.
+- `src/app/api/liveblocks-auth/route.ts`
+  - Authenticates callers, validates the requested project room, checks owner/collaborator access, ensures a private room exists, and returns a token with name, avatar, and cursor color.
+
+#### Updated Files
+
+- `liveblocks.config.ts`
+  - Defines cursor position and `isThinking` presence plus user ID, display name, avatar URL, and cursor color metadata.
+- `context-progress/progress-tracker.md`
+  - Records Feature 10 implementation and the outstanding dependency/build verification blocker.
+
+#### Verification
+
+- `npm run build` and `npx tsc --noEmit` did not complete in this environment.
+- `@liveblocks/node` is absent from the installed dependencies; `npm install @liveblocks/node` stalled because npm registry access is unavailable. Re-run installation and build verification with registry access.
+
+---
