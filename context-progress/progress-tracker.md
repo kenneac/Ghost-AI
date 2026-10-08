@@ -42,3 +42,4 @@ Update this file whenever the current phase, active feature, or implementation s
 ## Session Notes
 
 - Feature 06 was implemented backend-only and validated end to end: `401` on every unauthenticated request, `403` on non-owner mutations, cuid IDs, the `Untitled Project` default, and a clean `npm run build` that now includes all `src/app` routes.
+- Clerk auth route fix: sign-in/sign-up public matchers now include nested paths required by Clerk's catch-all checks. Both nested probes return HTTP 200, browser initialization has no Clerk errors, and ESLint passes for `src/proxy.ts`; signed-in logout still needs an authenticated test session.
