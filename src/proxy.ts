@@ -6,8 +6,12 @@ const isPublicRoute = createRouteMatcher([
   "/",
 ]);
 
+// API routes run their own auth check so unauthenticated requests receive a
+// JSON 401 from the handler instead of the middleware's default 404 response.
+const isApiRoute = createRouteMatcher(["/api(.*)"]);
+
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicRoute(req)) {
+  if (isPublicRoute(req) || isApiRoute(req)) {
     return;
   }
 

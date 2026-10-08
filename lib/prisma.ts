@@ -1,12 +1,15 @@
-import { PrismaClient } from "../app/generated/prisma/client";
+import { PrismaClient } from "../prisma/generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 const globalForPrisma = globalThis as typeof globalThis & {
-  prisma?: ReturnType<typeof createPrismaClient>;
+  prisma?: PrismaClient;
 };
 
-function createPrismaClient() {
+// The explicit `PrismaClient` return type unifies both connection branches —
+// without it the Accelerate branch's dynamic `$extends` type forms a union
+// whose model delegates are not callable.
+function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
@@ -17,9 +20,12 @@ function createPrismaClient() {
     connectionString.startsWith("prisma://") ||
     connectionString.startsWith("prisma+postgres://")
   ) {
+    // Prisma's dynamic `$extends` type does not structurally match the static
+    // `PrismaClient` interface (e.g. it omits `$on`), so it is cast once here;
+    // the runtime client exposes the same model delegates either way.
     return new PrismaClient({
       accelerateUrl: connectionString,
-    }).$extends(withAccelerate());
+    }).$extends(withAccelerate()) as unknown as PrismaClient;
   }
 
   const adapter = new PrismaPg({

@@ -85,3 +85,36 @@ Copy this structure for every new feature:
   - Marks the Prisma feature as in progress and updates the active goal and session notes for the current implementation step.
 
 ---
+
+### Feature 2: Project API routes
+
+**Date:** 2026-10-08
+
+**Description:** Added authenticated REST endpoints for listing, creating, renaming, and deleting projects with Clerk auth, owner-only mutations, and consistent `401`/`403`/`404`/`400` error responses. Also applied the pending Feature 05 project migration to the configured database.
+
+#### New Files
+
+- `src/app/api/projects/route.ts`
+  - `GET` lists the signed-in user's projects; `POST` creates a project with the Clerk user ID as `ownerId`.
+  - Defaults a missing or blank name to `Untitled Project`, returns `201`, and relies on the schema's cuid ID strategy.
+- `src/app/api/projects/[projectId]/route.ts`
+  - `PATCH` renames and `DELETE` removes a project after the owner check.
+  - Returns `403` for non-owners, `404` for missing projects, and `400` for invalid input.
+- `src/lib/project-api.ts`
+  - Shared helpers: Clerk auth resolution, JSON body parsing, error responses, and owner-only project lookup.
+
+#### Updated Files
+
+- `src/proxy.ts`
+  - Skips `auth.protect()` for `/api` routes so handlers return JSON `401` instead of Clerk's default `404` for unauthenticated API requests.
+- `lib/prisma.ts`
+  - Types the singleton as the static `PrismaClient` (cast on the Accelerate branch) so both connection branches stay callable; import moved to the new generated path.
+- `prisma/schema.prisma`
+  - Moves the generated client output from `app/generated/prisma` to `prisma/generated`.
+  - Why: a root-level `app/` directory wins over `src/app` in Next.js and was silently excluding every route from the build.
+- `.gitignore`
+  - Ignores the new `/prisma/generated/` output and retains the old `app` path.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 06 in progress, then completed, and records the API security and layout decisions.
+
+---
