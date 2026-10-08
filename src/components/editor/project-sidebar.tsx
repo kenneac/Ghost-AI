@@ -10,7 +10,8 @@ import type { ProjectItem } from "@/components/editor/use-project-dialogs";
 type ProjectSidebarProps = {
   isOpen: boolean;
   onClose: () => void;
-  projects: ProjectItem[];
+  ownedProjects: ProjectItem[];
+  sharedProjects: ProjectItem[];
   onCreateProject: () => void;
   onRenameProject: (project: ProjectItem) => void;
   onDeleteProject: (project: ProjectItem, trigger?: HTMLElement | null) => void;
@@ -19,14 +20,12 @@ type ProjectSidebarProps = {
 export function ProjectSidebar({
   isOpen,
   onClose,
-  projects,
+  ownedProjects,
+  sharedProjects,
   onCreateProject,
   onRenameProject,
   onDeleteProject,
 }: ProjectSidebarProps) {
-  const ownedProjects = projects.filter((project) => project.isOwner);
-  const sharedProjects = projects.filter((project) => !project.isOwner);
-
   return (
     <>
       {isOpen ? (

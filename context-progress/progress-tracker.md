@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 06 (project API routes) — completed
+- Feature 07 (editor home API wiring) — completed
 
 ## Current Goal
 
-- Feature 06: add authenticated REST endpoints for listing, creating, renaming, and deleting projects with owner-only mutation checks.
+- Wire the editor home to the real project API and keep the sidebar, create/rename/delete flows, and workspace navigation aligned with the authenticated project data.
 
 ## Completed
 
@@ -16,6 +16,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 04: editor home empty state, create/rename/delete project dialogs, live slug preview, and sidebar project actions for owned projects only.
 - Feature 05: Prisma schema definitions, cached client singleton, and the initial project migration.
 - Feature 06: project API routes (`GET`/`POST /api/projects`, `PATCH`/`DELETE /api/projects/[projectId]`) with Clerk auth, owner-only mutations, and `401`/`403`/`404`/`400` handling — verified with live HTTP tests and `npm run build`.
+- Feature 07: editor home project API wiring — server-side fetch for owned/shared lists, sidebar-only actions for project owners, create/rename/delete mutations through the real API, and successful `npm run build` verification.
 
 ## In Progress
 
@@ -23,7 +24,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Wire the editor UI to these project APIs in a later feature (spec 06 is backend-only).
+- Continue with the next feature once the editor API flow is expanded beyond the project list, create, rename, and delete flow.
 
 ## Open Questions
 
