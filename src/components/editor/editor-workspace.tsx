@@ -6,6 +6,7 @@ import { Bot, Share2 } from "lucide-react";
 import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { ProjectSidebar } from "@/components/editor/project-sidebar";
 import { Button } from "@/components/ui/button";
+import { ShareDialog } from "@/components/editor/share-dialog";
 import type { ProjectListItem } from "@/lib/project-data";
 
 type EditorWorkspaceProps = {
@@ -17,6 +18,7 @@ type EditorWorkspaceProps = {
 export function EditorWorkspace({ project, ownedProjects, sharedProjects }: EditorWorkspaceProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   return (
     <main className="flex h-dvh flex-col overflow-hidden bg-base text-copy-primary">
@@ -26,7 +28,7 @@ export function EditorWorkspace({ project, ownedProjects, sharedProjects }: Edit
         title={project.name}
         actions={
           <>
-            <Button type="button" variant="outline" size="sm" className="gap-2">
+            <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setIsShareDialogOpen(true)}>
               <Share2 className="h-4 w-4" />
               Share
             </Button>
@@ -44,6 +46,7 @@ export function EditorWorkspace({ project, ownedProjects, sharedProjects }: Edit
           </>
         }
       />
+      <ShareDialog projectId={project.id} open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} />
       <ProjectSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}

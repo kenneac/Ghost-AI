@@ -182,3 +182,29 @@ Copy this structure for every new feature:
   - Marks Feature 08 complete and records the room-to-project mapping decision and remaining open question.
 
 ---
+
+### Feature 5: Share dialog and collaborator management
+
+**Date:** 2026-10-08
+
+**Description:** Added project sharing from the editor workspace. Owners can invite and remove collaborators, while project members can view the collaborator list; Clerk profiles enrich collaborator emails when available, and users can copy the project link.
+
+#### New Files
+
+- `src/app/api/projects/[projectId]/collaborators/route.ts`
+  - Lists collaborators for project members and enriches matching emails with Clerk names and avatars.
+  - Adds owner-only invite and removal handlers with input validation.
+- `src/components/editor/share-dialog.tsx`
+  - Renders collaborator profiles and owner-only invite/removal controls.
+  - Copies the workspace URL and shows temporary `Copied!` feedback.
+
+#### Updated Files
+
+- `context/feature-specs/09-share-dialog.md`
+  - Tracks the feature status as completed.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 09 completed and records the implementation and build verification.
+- `src/components/editor/editor-workspace.tsx`
+  - Opens the Share dialog from the workspace navbar button.
+
+---
