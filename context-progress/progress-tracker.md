@@ -4,7 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Features 10–11 (Liveblocks setup and base collaborative canvas) — implemented; TypeScript verified
+- Features 10–12 and canvas provider error fix — implemented; TypeScript verified
 
 ## Current Goal
 
@@ -23,7 +23,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## In Progress
 
-- Feature 10 implementation: Liveblocks typing, cached server client, deterministic cursor colors, and authenticated project room endpoint.
+- Fixed the React Flow provider context error reported in `context-issues/current-issues.md` by moving the provider above the hook-using canvas component.
 
 ## Next Up
 
@@ -49,6 +49,8 @@ Update this file whenever the current phase, active feature, or implementation s
 
 - Feature 10 adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation.
 - Feature 11 adds the client room wrapper, synchronized React Flow nodes/edges, connection status feedback, and shared canvas types.
+- Feature 12 adds a floating six-shape drag panel, typed size/shape payloads, screen-to-flow drop positioning, timestamp/counter IDs, and a basic custom node renderer. `npx tsc --noEmit` passes. `npm run build` stalled during optimized compilation and was interrupted; build verification remains open.
+- Canvas provider issue: split the canvas into a `ReactFlowProvider` wrapper and descendant hook consumer, so `useReactFlow()` and the flow share the same provider context. `npx tsc --noEmit` and `git diff --check` pass. `npm run build` again stalled during optimized compilation and was interrupted.
 - The user installed `@liveblocks/node` and configured Liveblocks public/secret keys. Fixed TypeScript module resolution by locating shared modules under `src`, and changed React Flow loose connection mode to `ConnectionMode.Loose`. `npx tsc --noEmit` passes. `npm run build` compiles and finishes TypeScript, then stalls during page-data collection and was stopped.
 
 - Feature 09 uses the existing collaborator schema with no local user table or migration. The share dialog supports owner invites/removals, collaborator read-only listing, Clerk profile enrichment, and link copying; `npm run build` passes.

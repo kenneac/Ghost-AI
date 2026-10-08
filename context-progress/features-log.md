@@ -54,6 +54,7 @@ Copy this structure for every new feature:
 
 # Features
 
+
 ### Feature 1: Prisma project metadata foundation
 
 **Date:** 2026-10-07
@@ -254,6 +255,35 @@ Copy this structure for every new feature:
 - `@liveblocks/node` is absent from the installed dependencies; `npm install @liveblocks/node` stalled because npm registry access is unavailable. Re-run installation and build verification with registry access.
 
 ---
+### Feature 12: Shape panel
+
+**Date:** 2026-10-08
+
+Added a floating bottom-center shape toolbar to the shared canvas. Users can drag any of the six supported shapes onto the canvas; drops create shared `canvasNode` nodes at the corresponding flow coordinates with default dimensions/color and an empty label. The custom node renderer displays a simple bordered rectangle as specified for this feature.
+
+#### New Files
+
+- `src/components/editor/shape-panel.tsx`
+  - Renders draggable buttons for rectangle, diamond, circle, pill, cylinder, and hexagon. Drag payloads include the shape name and default width/height.
+- `src/components/editor/canvas-node.tsx`
+  - Renders the `canvasNode` type as a centered, bordered rectangle with connection handles.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Registers the custom node renderer, handles shape drag-over/drop, converts screen positions to React Flow coordinates, and adds nodes through the Liveblocks flow state with shape/timestamp/counter IDs.
+- `src/types/canvas.ts`
+  - Exposes the supported node shape union for typed drag payloads.
+- `context-progress/progress-tracker.md`
+  - Records Feature 12 as implemented and notes verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` stalled during optimized compilation and was interrupted; a successful production build remains unverified.
+
+---
 ### Feature 11: Base collaborative canvas
 
 **Date:** 2026-10-08
@@ -281,5 +311,26 @@ Replaced the workspace canvas placeholder with an empty React Flow graph synchro
 - `git diff --check` passed.
 - `npm run lint -- --no-cache` stalled after startup and was stopped.
 - `npm run build` remains unverified; the prior Liveblocks setup is missing `@liveblocks/node`, and registry access stalled during installation.
+
+---
+
+### Feature 13: Fix React Flow provider context error
+
+**Date:** 2026-10-08
+
+Fixed the editor canvas crash caused by calling `useReactFlow()` outside a `ReactFlowProvider` descendant. The provider now wraps the component that consumes React Flow hooks, keeping drop coordinate conversion and the rendered flow on the same context instance.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Split the flow into a provider wrapper and hook-using child to prevent the missing provider error.
+- `context-issues/plan-to-solve-current-issues.md`
+  - Replaced the old issue plan with the current root cause, fix plan, scope, and success criteria.
+- `context-progress/progress-tracker.md`
+  - Recorded the fix and verification status.
 
 ---

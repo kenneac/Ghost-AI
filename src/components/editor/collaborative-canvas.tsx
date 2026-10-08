@@ -9,10 +9,25 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  useReactFlow,
 } from "@xyflow/react";
+import { useCallback } from "react";
 import "@xyflow/react/dist/style.css";
 
 import type { CanvasEdge, CanvasNode } from "@/types/canvas";
+import { NODE_COLORS, NODE_SHAPES, type NodeShape } from "@/types/canvas";
+import { CanvasNodeView } from "@/components/editor/canvas-node";
+import { ShapePanel } from "@/components/editor/shape-panel";
+
+const NODE_TYPES = { canvasNode: CanvasNodeView };
+const SHAPE_DRAG_TYPE = "application/ghost-ai-shape";
+let nodeCounter = 0;
+
+interface ShapeDragPayload {
+  shape: NodeShape;
+  width: number;
+  height: number;
+}
 
 function CanvasLoading() {
   return (
@@ -36,32 +51,84 @@ function CanvasConnectionState() {
   );
 }
 
-function FlowCanvas() {
+function FlowCanvasContent() {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
     useLiveblocksFlow<CanvasNode, CanvasEdge>({
       nodes: { initial: [] },
       edges: { initial: [] },
       suspense: true,
     });
+  const { screenToFlowPosition } = useReactFlow<CanvasNode, CanvasEdge>();
+
+  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const rawPayload = event.dataTransfer.getData(SHAPE_DRAG_TYPE);
+    if (!rawPayload) return;
+
+    let payload: ShapeDragPayload;
+    try {
+      payload = JSON.parse(rawPayload) as ShapeDragPayload;
+    } catch {
+      return;
+    }
+    if (
+      !NODE_SHAPES.includes(payload.shape) ||
+      !Number.isFinite(payload.width) ||
+      !Number.isFinite(payload.height)
+    ) return;
+
+    const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+    nodeCounter += 1;
+    const node: CanvasNode = {
+      id: `${payload.shape}-${Date.now()}-${nodeCounter}`,
+      type: "canvasNode",
+      position,
+      width: payload.width,
+      height: payload.height,
+      data: {
+        label: "",
+        color: NODE_COLORS[0].background,
+        shape: payload.shape,
+      },
+    };
+    onNodesChange([{ type: "add", item: node }]);
+  }, [onNodesChange, screenToFlowPosition]);
 
   return (
-    <div className="relative h-full w-full">
-      <ReactFlowProvider>
-        <CanvasConnectionState />
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          connectionMode={ConnectionMode.Loose}
-          fitView
-        >
-          <MiniMap />
-          <Background variant={BackgroundVariant.Dots} />
-        </ReactFlow>
-      </ReactFlowProvider>
+    <div
+      className="relative h-full w-full"
+      onDragOver={(event) => {
+        if (event.dataTransfer.types.includes(SHAPE_DRAG_TYPE)) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+        }
+      }}
+      onDrop={handleDrop}
+    >
+      <CanvasConnectionState />
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={NODE_TYPES}
+        connectionMode={ConnectionMode.Loose}
+        fitView
+      >
+        <ShapePanel />
+        <MiniMap />
+        <Background variant={BackgroundVariant.Dots} />
+      </ReactFlow>
     </div>
+  );
+}
+
+function FlowCanvas() {
+  return (
+    <ReactFlowProvider>
+      <FlowCanvasContent />
+    </ReactFlowProvider>
   );
 }
 

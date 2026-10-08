@@ -28,3 +28,5 @@ export const NODE_SHAPES = [
   "cylinder",
   "hexagon",
 ] as const;
+
+export type NodeShape = (typeof NODE_SHAPES)[number];
