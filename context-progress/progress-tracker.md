@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 10 (Liveblocks setup) — implemented; verification blocked
+- Features 10–11 (Liveblocks setup and base collaborative canvas) — implemented; TypeScript verified
 
 ## Current Goal
 
-- Verify the Liveblocks implementation after installing `@liveblocks/node` in an environment with npm registry access.
+- Complete production build verification; build now compiles and type checks but stalls during page-data collection in this environment.
 
 ## Completed
 
@@ -23,17 +23,16 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## In Progress
 
-- Feature 10 implementation: Liveblocks typing, cached server client, deterministic cursor colors, and authenticated project room endpoint. `npm run build` and `npx tsc --noEmit` did not complete in this restricted environment; `@liveblocks/node` is not installed, and npm registry access stalled.
+- Feature 10 implementation: Liveblocks typing, cached server client, deterministic cursor colors, and authenticated project room endpoint.
 
 ## Next Up
 
-- Install `@liveblocks/node`, then run `npm run build` and resolve any type or build issues.
-- Continue canvas implementation after Liveblocks setup verifies.
+- Complete `npm run build` verification. `@liveblocks/node` is installed, TypeScript passes, and Next.js compiles; the current build stalls during page-data collection.
+- Continue canvas work with its next defined feature.
 
 ## Open Questions
 
 - Feature 08 uses `/editor/[roomId]`, but no room-to-project mapping exists yet. The current route uses the project ID as the segment; canvas/collaboration work must define the durable room ID contract.
-- The Liveblocks node SDK is missing from the installed dependency tree even though the feature spec says required packages are already installed; npm registry access stalled while attempting installation.
 
 ## Architecture Decisions
 
@@ -48,7 +47,9 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
-- Feature 10 implementation adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation. Build and type verification remain incomplete because installing `@liveblocks/node` stalled under restricted npm access and local build/typecheck processes did not finish.
+- Feature 10 adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation.
+- Feature 11 adds the client room wrapper, synchronized React Flow nodes/edges, connection status feedback, and shared canvas types.
+- The user installed `@liveblocks/node` and configured Liveblocks public/secret keys. Fixed TypeScript module resolution by locating shared modules under `src`, and changed React Flow loose connection mode to `ConnectionMode.Loose`. `npx tsc --noEmit` passes. `npm run build` compiles and finishes TypeScript, then stalls during page-data collection and was stopped.
 
 - Feature 09 uses the existing collaborator schema with no local user table or migration. The share dialog supports owner invites/removals, collaborator read-only listing, Clerk profile enrichment, and link copying; `npm run build` passes.
 - Sidebar project navigation issue confirmed: the editor home rendered project names as plain text because workspace navigation was disabled. Project names now link to `/editor/{projectId}` in both sidebar contexts.

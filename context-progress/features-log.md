@@ -254,3 +254,32 @@ Copy this structure for every new feature:
 - `@liveblocks/node` is absent from the installed dependencies; `npm install @liveblocks/node` stalled because npm registry access is unavailable. Re-run installation and build verification with registry access.
 
 ---
+### Feature 11: Base collaborative canvas
+
+**Date:** 2026-10-08
+
+Replaced the workspace canvas placeholder with an empty React Flow graph synchronized through Liveblocks. The workspace page remains a Server Component, while a client room wrapper provides Liveblocks auth, room presence, loading feedback, and connection status.
+
+#### New Files
+
+- `types/canvas.ts`
+  - Defines canvas node data, `canvasNode`/`canvasEdge` types, and the shared node color and shape constants.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Wraps the canvas in LiveblocksProvider and RoomProvider with the current project room and initial presence.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Connects React Flow to `useLiveblocksFlow` with empty initial state, loose connections, fitView, MiniMap, dot background, and connection feedback.
+
+#### Updated Files
+
+- `src/components/editor/editor-workspace.tsx`
+  - Replaces the static canvas placeholder with the project’s Liveblocks room canvas.
+- `context-progress/progress-tracker.md`
+  - Records Feature 11 implementation and outstanding verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run lint -- --no-cache` stalled after startup and was stopped.
+- `npm run build` remains unverified; the prior Liveblocks setup is missing `@liveblocks/node`, and registry access stalled during installation.
+
+---

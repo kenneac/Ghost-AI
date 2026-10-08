@@ -7,6 +7,7 @@ import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { ProjectSidebar } from "@/components/editor/project-sidebar";
 import { Button } from "@/components/ui/button";
 import { ShareDialog } from "@/components/editor/share-dialog";
+import { LiveblocksCanvasRoom } from "@/components/editor/liveblocks-canvas-room";
 import type { ProjectListItem } from "@/lib/project-data";
 
 type EditorWorkspaceProps = {
@@ -61,12 +62,9 @@ export function EditorWorkspace({ project, ownedProjects, sharedProjects }: Edit
       <div className="flex min-h-0 flex-1 pt-16">
         <section
           aria-label="Canvas workspace"
-          className="relative flex min-w-0 flex-1 items-center justify-center overflow-hidden bg-base"
+          className="relative flex min-w-0 flex-1 overflow-hidden bg-base"
         >
-          <div className="text-center">
-            <p className="text-sm font-medium text-copy-secondary">Canvas workspace</p>
-            <p className="mt-1 text-xs text-copy-muted">Your system design canvas will appear here.</p>
-          </div>
+          <LiveblocksCanvasRoom roomId={project.id} />
         </section>
         <aside
           aria-label="AI assistant sidebar"
