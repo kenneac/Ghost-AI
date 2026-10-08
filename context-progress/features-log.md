@@ -85,3 +85,70 @@ Copy this structure for every new feature:
   - Marks the Prisma feature as in progress and updates the active goal and session notes for the current implementation step.
 
 ---
+
+### Feature 2: Project API routes
+
+**Date:** 2026-10-08
+
+**Description:** Added authenticated REST endpoints for listing, creating, renaming, and deleting projects with Clerk auth, owner-only mutations, and consistent `401`/`403`/`404`/`400` error responses. Also applied the pending Feature 05 project migration to the configured database.
+
+#### New Files
+
+- `src/app/api/projects/route.ts`
+  - `GET` lists the signed-in user's projects; `POST` creates a project with the Clerk user ID as `ownerId`.
+  - Defaults a missing or blank name to `Untitled Project`, returns `201`, and relies on the schema's cuid ID strategy.
+- `src/app/api/projects/[projectId]/route.ts`
+  - `PATCH` renames and `DELETE` removes a project after the owner check.
+  - Returns `403` for non-owners, `404` for missing projects, and `400` for invalid input.
+- `src/lib/project-api.ts`
+  - Shared helpers: Clerk auth resolution, JSON body parsing, error responses, and owner-only project lookup.
+
+#### Updated Files
+
+- `src/proxy.ts`
+  - Skips `auth.protect()` for `/api` routes so handlers return JSON `401` instead of Clerk's default `404` for unauthenticated API requests.
+- `lib/prisma.ts`
+  - Types the singleton as the static `PrismaClient` (cast on the Accelerate branch) so both connection branches stay callable; import moved to the new generated path.
+- `prisma/schema.prisma`
+  - Moves the generated client output from `app/generated/prisma` to `prisma/generated`.
+  - Why: a root-level `app/` directory wins over `src/app` in Next.js and was silently excluding every route from the build.
+- `.gitignore`
+  - Ignores the new `/prisma/generated/` output and retains the old `app` path.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 06 in progress, then completed, and records the API security and layout decisions.
+
+---
+
+### Feature 3: Editor home API wiring
+
+**Date:** 2026-10-08
+
+**Description:** Wired the editor home to real project data by moving the initial project list to a server-side fetch, updating the sidebar to separate owned and shared projects, and connecting create, rename, and delete flows to the authenticated project API with workspace navigation and refresh handling.
+
+#### New Files
+
+- `src/lib/project-data.ts`
+  - Fetches the signed-in user’s owned projects and collaborator-shared projects server-side.
+  - Derives the sidebar project list without doing client-side fetches on initial load.
+- `src/hooks/use-project-dialogs.ts`
+  - Centralizes project dialog state, form state, mutation calls, and navigation logic.
+  - Creates a unique room suffix for create flows and keeps the project and room navigation behavior aligned.
+- `src/components/editor/editor-home.tsx`
+  - Composes the editor shell, sidebar, empty-state home content, and API-backed dialog interactions.
+  - Keeps the create/rename/delete dialogs consistent with the feature spec and dark editor styling.
+
+#### Updated Files
+
+- `src/app/editor/page.tsx`
+  - Converts the editor page to a server component that loads the real project lists before rendering the client editor shell.
+  - Why: the spec requires server-side fetching for the initial project list.
+- `src/components/editor/project-sidebar.tsx`
+  - Accepts separate `ownedProjects` and `sharedProjects` arrays and only shows action buttons for owned entries.
+  - Why: the sidebar must distinguish owner-only actions from collaborator-only views.
+- `src/components/editor/use-project-dialogs.ts`
+  - Replaced the mock implementation with a compatibility re-export of the real hook.
+  - Why: the editor home and existing imports now resolve to the API-backed hook path.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 07 as completed and records the final implementation and verification status.
+
+---
