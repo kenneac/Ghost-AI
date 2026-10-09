@@ -13,13 +13,15 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { Minus, Plus, RotateCcw, RotateCw, ScanLine } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import "@xyflow/react/dist/style.css";
 
 import type { CanvasEdge, CanvasNode } from "@/types/canvas";
 import { NODE_COLORS, NODE_SHAPES, type NodeShape } from "@/types/canvas";
 import { CanvasEdgeView } from "@/components/editor/canvas-edge";
 import { CanvasNodeView } from "@/components/editor/canvas-node";
+import type { CanvasTemplate } from "@/components/editor/starter-templates";
+import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal";
 import { ShapePanel } from "@/components/editor/shape-panel";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
@@ -167,7 +169,11 @@ function CanvasControls() {
   );
 }
 
-function FlowCanvasContent() {
+function FlowCanvasContent({
+  onRegisterImport,
+}: {
+  onRegisterImport: (importTemplate: (template: CanvasTemplate) => void) => void;
+}) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
     useLiveblocksFlow<CanvasNode, CanvasEdge>({
       nodes: { initial: [] },
@@ -175,6 +181,20 @@ function FlowCanvasContent() {
       suspense: true,
     });
   const { screenToFlowPosition } = useReactFlow<CanvasNode, CanvasEdge>();
+  const reactFlow = useReactFlow<CanvasNode, CanvasEdge>();
+
+  const importTemplate = useCallback(
+    (template: CanvasTemplate) => {
+      if (nodes.length) onNodesChange(nodes.map((node) => ({ type: "remove" as const, id: node.id })));
+      if (edges.length) onEdgesChange(edges.map((edge) => ({ type: "remove" as const, id: edge.id })));
+      onNodesChange(template.nodes.map((node) => ({ type: "add" as const, item: node })));
+      onEdgesChange(template.edges.map((edge) => ({ type: "add" as const, item: edge })));
+      window.requestAnimationFrame(() => reactFlow.fitView({ duration: 250, padding: 0.2 }));
+    },
+    [edges, nodes, onEdgesChange, onNodesChange, reactFlow],
+  );
+
+  useEffect(() => onRegisterImport(importTemplate), [importTemplate, onRegisterImport]);
 
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -262,18 +282,18 @@ function FlowCanvasContent() {
   );
 }
 
-function FlowCanvas() {
+function FlowCanvas({ onRegisterImport }: { onRegisterImport: (importTemplate: (template: CanvasTemplate) => void) => void }) {
   return (
     <ReactFlowProvider>
-      <FlowCanvasContent />
+      <FlowCanvasContent onRegisterImport={onRegisterImport} />
     </ReactFlowProvider>
   );
 }
 
-export function CollaborativeCanvas({ roomId }: { roomId: string }) {
+export function CollaborativeCanvas({ roomId, onRegisterImport }: { roomId: string; onRegisterImport: (handler: (template: CanvasTemplate) => void) => void }) {
   return (
     <ClientSideSuspense fallback={<CanvasLoading />}>
-      <FlowCanvas key={roomId} />
+      <FlowCanvas key={roomId} onRegisterImport={onRegisterImport} />
     </ClientSideSuspense>
   );
 }

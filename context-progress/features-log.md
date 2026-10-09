@@ -24,6 +24,39 @@
 
 ---
 
+### Feature 19: Starter templates
+
+**Date:** 2026-10-09
+
+**Description:** Added a predefined starter template library with lightweight diagram previews and an editor navbar entry point. Importing a template clears the existing collaborative nodes and edges, loads the selected graph through Liveblocks flow state, and fits the canvas view.
+
+#### New Files
+
+- `src/components/editor/starter-templates.ts`
+  - Defines the shared `CanvasTemplate` type and three templates: microservices, CI/CD pipeline, and event-driven system.
+  - Uses the shared canvas node and edge types and existing node color palette.
+- `src/components/editor/starter-templates-modal.tsx`
+  - Renders a scrollable template card grid with scaled SVG previews based on node position bounds, simple center-to-center edges, shape and color rendering, descriptions, and import buttons.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Registers the template importer in the collaborative canvas and replaces current nodes and edges before adding the selected template, then fits the view.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Passes the import handler registration across the existing room boundary.
+- `src/components/editor/editor-workspace.tsx`
+  - Adds the Templates navbar action and hosts the template modal.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 19 as implemented and records verification.
+
+#### Verification
+
+- `npm run build` passed.
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+
+---
+
 ## Entry Template
 
 Copy this structure for every new feature:
