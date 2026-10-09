@@ -24,6 +24,39 @@
 
 ---
 
+### Feature 19: Starter templates
+
+**Date:** 2026-10-09
+
+**Description:** Added a predefined starter template library with lightweight diagram previews and an editor navbar entry point. Importing a template clears the existing collaborative nodes and edges, loads the selected graph through Liveblocks flow state, and fits the canvas view.
+
+#### New Files
+
+- `src/components/editor/starter-templates.ts`
+  - Defines the shared `CanvasTemplate` type and three templates: microservices, CI/CD pipeline, and event-driven system.
+  - Uses the shared canvas node and edge types and existing node color palette.
+- `src/components/editor/starter-templates-modal.tsx`
+  - Renders a scrollable template card grid with scaled SVG previews based on node position bounds, simple center-to-center edges, shape and color rendering, descriptions, and import buttons.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Registers the template importer in the collaborative canvas and replaces current nodes and edges before adding the selected template, then fits the view.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Passes the import handler registration across the existing room boundary.
+- `src/components/editor/editor-workspace.tsx`
+  - Adds the Templates navbar action and hosts the template modal.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 19 as implemented and records verification.
+
+#### Verification
+
+- `npm run build` passed.
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+
+---
+
 ## Entry Template
 
 Copy this structure for every new feature:
@@ -53,7 +86,6 @@ Copy this structure for every new feature:
 ---
 
 # Features
-
 
 ### Feature 1: Prisma project metadata foundation
 
@@ -229,6 +261,7 @@ Copy this structure for every new feature:
   - Records the confirmed cause and completed navigation fix.
 
 ---
+
 ### Feature 10: Liveblocks setup
 
 **Date:** 2026-10-08
@@ -255,6 +288,7 @@ Copy this structure for every new feature:
 - `@liveblocks/node` is absent from the installed dependencies; `npm install @liveblocks/node` stalled because npm registry access is unavailable. Re-run installation and build verification with registry access.
 
 ---
+
 ### Feature 12: Shape panel
 
 **Date:** 2026-10-08
@@ -284,6 +318,7 @@ Added a floating bottom-center shape toolbar to the shared canvas. Users can dra
 - `npm run build` stalled during optimized compilation and was interrupted; a successful production build remains unverified.
 
 ---
+
 ### Feature 11: Base collaborative canvas
 
 **Date:** 2026-10-08
@@ -332,5 +367,150 @@ None.
   - Replaced the old issue plan with the current root cause, fix plan, scope, and success criteria.
 - `context-progress/progress-tracker.md`
   - Recorded the fix and verification status.
+
+---
+
+### Feature 14: Node shapes and drag preview
+
+**Date:** 2026-10-08
+
+**Description:** Replaced the placeholder canvas node with all six specified shape variants. Shape drags now show a cursor-attached ghost preview using the shape and default size that will be dropped, while nodes remain synchronized through the existing collaborative canvas state.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/canvas-node.tsx`
+  - Renders rectangle, pill, and circle with CSS and diamond, hexagon, and cylinder with scalable SVG geometry.
+  - Highlights selected node borders and retains four hover-revealed connection handles.
+- `src/components/editor/shape-panel.tsx`
+  - Adds a pointer-following ghost preview during shape drags and clears it when dragging ends.
+  - Reuses the panel’s existing default shape dimensions and node visual renderer.
+- `context-progress/progress-tracker.md`
+  - Records Feature 13 implementation and the production build verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` exited after optimized compilation started without a success or error summary; production build verification remains open.
+
+---
+
+### Feature 15: Node resizing and inline label editing
+
+**Date:** 2026-10-09
+
+**Description:** Added selection-only resize controls with minimum dimensions and centered inline label editing for canvas nodes. Label changes update through React Flow’s provider-scoped node API and remain synchronized in the existing Liveblocks flow.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/canvas-node.tsx`
+  - Adds subtle selected-node resize handles with 80×60 minimum dimensions.
+  - Adds centered double-click label editing, empty-label placeholder, live collaborative updates, blur commit, and Escape cancel.
+  - Stops text interactions from initiating node dragging or canvas panning.
+- `context-progress/progress-tracker.md`
+  - Records Feature 14 implementation and production build verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` compiled and finished TypeScript, then stalled during page-data collection without a final result.
+
+---
+
+### Feature 16: Node color toolbar
+
+**Date:** 2026-10-09
+
+**Description:** Added a compact toolbar above selected nodes with one swatch for each predefined canvas color pair. Selecting a swatch immediately updates both the node background and paired text color through the collaborative node state.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/canvas-node.tsx`
+  - Adds the selected-node floating color toolbar with clear active state and a tight hover glow based on each pair’s text color.
+  - Applies paired background and text colors through React Flow’s Liveblocks-backed `updateNodeData` API.
+  - Renders node labels and inline editing text with the selected paired text color.
+- `src/types/canvas.ts`
+  - Adds optional paired text color to canvas node data for existing nodes.
+- `src/components/editor/shape-panel.tsx`
+  - Supplies the default text color when rendering the drag preview.
+- `context-progress/progress-tracker.md`
+  - Records Feature 15 implementation and build verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` exited after optimized compilation started without a completion summary.
+
+---
+
+### Feature 17: Custom canvas edge behavior
+
+**Date:** 2026-10-09
+
+**Description:** Added custom edge rendering for the collaborative canvas with four-sided connection handles, arrowed smooth-step paths, hover emphasis, and inline label editing that persists through the shared edge data flow.
+
+#### New Files
+
+- `src/components/editor/canvas-edge.tsx`
+  - Renders the custom canvas edge with smooth-step routing, arrow markers, hover/selection state, and inline editable labels.
+  - Uses `EdgeLabelRenderer` and `getSmoothStepPath` midpoint coordinates so labels remain aligned with the edge path without manual midpoint math.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Registers the custom edge renderer and default edge options so all new connections use the canvas edge style with arrowheads and a right-angle routing path.
+- `src/components/editor/canvas-node.tsx`
+  - Adds subtle connection handles on all four sides with a hover fade-in, matching the spec for bidirectional connection points on every node edge.
+- `src/types/canvas.ts`
+  - Stores editable edge labels in the edge `data` payload so labels flow through the collaborative canvas state instead of built-in edge text fields.
+- `context-progress/progress-tracker.md`
+  - Marks the feature as implemented and records the completed build verification.
+
+#### Verification
+
+- `npm run build` passed.
+- `git diff --check` passed.
+
+---
+
+### Feature 18: Canvas ergonomics
+
+**Date:** 2026-10-09
+
+**Description:** Added a floating canvas control bar for zoom and undo/redo, removed the minimap, and wired the same actions to keyboard shortcuts while preserving the existing collaborative Liveblocks state and room setup.
+
+#### New Files
+
+- `src/hooks/use-keyboard-shortcuts.ts`
+  - Handles `+`/`=` zoom in, `-` zoom out, and Ctrl/Cmd-based undo/redo shortcuts while ignoring events from editable inputs and text fields.
+  - Receives the React Flow instance and the history handlers so the keyboard flow matches the canvas controls.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Adds the floating bottom-left pill control bar with zoom controls (zoom out, fit view, zoom in) and history controls (undo, redo).
+  - Wires the buttons to the shared React Flow instance and Liveblocks `useUndo`/`useRedo` hooks, disables empty history states, and removes the minimap from the canvas.
+  - Keeps the existing collaborative canvas state and drag/drop behavior unchanged while integrating the new ergonomics actions.
+- `context-progress/progress-tracker.md`
+  - Marks the canvas ergonomics feature as implemented and records the final verification status.
+
+#### Verification
+
+- `npm run build` passed.
+- `git diff --check` passed.
 
 ---

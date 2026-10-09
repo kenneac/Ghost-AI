@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Features 10–12 and canvas provider error fix — implemented; TypeScript verified
+- Feature 19: starter templates — implemented and build verified
 
 ## Current Goal
 
-- Complete production build verification; build now compiles and type checks but stalls during page-data collection in this environment.
+- Log the completed starter template feature and continue with the next implementation unit.
 
 ## Completed
 
@@ -19,16 +19,18 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 07: editor home project API wiring — server-side fetch for owned/shared lists, sidebar-only actions for project owners, create/rename/delete mutations through the real API, and successful `npm run build` verification.
 - Feature 08: authenticated `/editor/[roomId]` workspace shell with owner/collaborator access checks, an access-denied state, active-project sidebar navigation, and project-aware workspace URLs.
 - Feature 09: workspace share dialog with Clerk-enriched collaborator list, owner-only invite/removal APIs, read-only collaborator access, and project link copying.
+- Feature 16: custom canvas edge behavior with subtle node handles, default arrowed canvas edges, custom smooth-step edge rendering, and inline label editing that updates through the collaborative edge flow.
+- Issue 1 fix: inline node label editing no longer renders a duplicate static label underneath the textarea; the editor now keeps a single crisp text layer while typing and remains synced through React Flow node state.
 - Sidebar project navigation fix: project names now link to their workspace from both the editor home and workspace sidebar.
+- Feature 19: predefined starter template library with canvas previews and collaborative canvas replacement.
 
 ## In Progress
 
-- Fixed the React Flow provider context error reported in `context-issues/current-issues.md` by moving the provider above the hook-using canvas component.
+- None.
 
 ## Next Up
 
-- Complete `npm run build` verification. `@liveblocks/node` is installed, TypeScript passes, and Next.js compiles; the current build stalls during page-data collection.
-- Continue canvas work with its next defined feature.
+- Continue with the next implementation unit after logging Feature 19.
 
 ## Open Questions
 
@@ -46,6 +48,13 @@ Update this file whenever the current phase, active feature, or implementation s
 - The Feature 05 migration is applied to the configured database with `prisma migrate deploy`.
 
 ## Session Notes
+
+- Canvas selection fix: the full-node label overlay stopped `mousedown` and `click` propagation, preventing React Flow from selecting nodes on a single click. Removed those stops while retaining `nodrag`/`nopan` and double-click label editing. `npx tsc --noEmit` and `npm run build` pass; focused ESLint reports the existing `setState`-in-effect violation in `canvas-node.tsx`.
+- Feature 16 adds custom canvas edges with a right-angle smooth-step path, hover and selection emphasis, arrow markers, and a live inline label editor backed by `ReactFlow` edge state. The feature uses all four node sides with dual source/target handles, keeps default handles subtle until hover, and passes a production `npm run build` check.
+- Feature 15 adds a selected-node toolbar using the existing eight canvas color pairs. Swatch changes update both background and text colors through the collaborative node state. `npx tsc --noEmit` and `git diff --check` pass; the production build exits after optimized compilation starts without a completion summary.
+- Feature 14 adds minimum-bounded resize handles and centered inline label editing to the collaborative node renderer. Label edits use React Flow's provider-scoped node update API and remain synchronized through Liveblocks.
+- Feature 13 implementation is complete: six shape variants and a cursor-attached ghost preview are connected to the existing collaborative canvas and drag/drop flow.
+- Feature 19 adds three predefined architecture templates, a lightweight scaled SVG preview grid, and a navbar import action that removes current collaborative nodes/edges before loading the selected template and fitting the view. `npm run build`, `npx tsc --noEmit`, and `git diff --check` pass.
 
 - Feature 10 adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation.
 - Feature 11 adds the client room wrapper, synchronized React Flow nodes/edges, connection status feedback, and shared canvas types.

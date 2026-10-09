@@ -1,25 +1,32 @@
 "use client";
 
+import { useCanRedo, useCanUndo, useRedo, useUndo } from "@liveblocks/react";
 import { useLiveblocksFlow } from "@liveblocks/react-flow";
 import { ClientSideSuspense, useStatus } from "@liveblocks/react/suspense";
 import {
   Background,
   BackgroundVariant,
   ConnectionMode,
-  MiniMap,
+  MarkerType,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import { useCallback } from "react";
+import { Minus, Plus, RotateCcw, RotateCw, ScanLine } from "lucide-react";
+import { useCallback, useEffect } from "react";
 import "@xyflow/react/dist/style.css";
 
 import type { CanvasEdge, CanvasNode } from "@/types/canvas";
 import { NODE_COLORS, NODE_SHAPES, type NodeShape } from "@/types/canvas";
+import { CanvasEdgeView } from "@/components/editor/canvas-edge";
 import { CanvasNodeView } from "@/components/editor/canvas-node";
+import type { CanvasTemplate } from "@/components/editor/starter-templates";
+import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal";
 import { ShapePanel } from "@/components/editor/shape-panel";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 const NODE_TYPES = { canvasNode: CanvasNodeView };
+const EDGE_TYPES = { canvasEdge: CanvasEdgeView };
 const SHAPE_DRAG_TYPE = "application/ghost-ai-shape";
 let nodeCounter = 0;
 
@@ -43,7 +50,10 @@ function CanvasConnectionState() {
   if (status === "connected") return null;
 
   return (
-    <div role="status" className="absolute left-4 top-4 z-10 rounded-xl border border-surface-border bg-surface px-3 py-2 text-xs text-copy-muted">
+    <div
+      role="status"
+      className="absolute left-4 top-4 z-10 rounded-xl border border-surface-border bg-surface px-3 py-2 text-xs text-copy-muted"
+    >
       {status === "connecting" || status === "reconnecting"
         ? "Reconnecting to the shared canvas…"
         : "Could not connect to the shared canvas. Check your connection and refresh."}
@@ -51,7 +61,119 @@ function CanvasConnectionState() {
   );
 }
 
-function FlowCanvasContent() {
+function ControlButton({
+  label,
+  title,
+  onClick,
+  disabled = false,
+  children,
+}: {
+  label: string;
+  title: string;
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-8 w-8 items-center justify-center rounded-full text-copy-secondary transition-colors hover:bg-bg-subtle hover:text-brand disabled:cursor-not-allowed disabled:text-copy-muted disabled:hover:bg-transparent disabled:opacity-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+function CanvasControls() {
+  const reactFlow = useReactFlow<CanvasNode, CanvasEdge>();
+  const undo = useUndo();
+  const redo = useRedo();
+  const canUndo = useCanUndo();
+  const canRedo = useCanRedo();
+
+  const handleZoomIn = useCallback(() => {
+    reactFlow.zoomIn({ duration: 180 });
+  }, [reactFlow]);
+
+  const handleZoomOut = useCallback(() => {
+    reactFlow.zoomOut({ duration: 180 });
+  }, [reactFlow]);
+
+  const handleFitView = useCallback(() => {
+    reactFlow.fitView({ duration: 200, padding: 0.2 });
+  }, [reactFlow]);
+
+  const handleUndo = useCallback(() => {
+    if (canUndo) {
+      undo();
+    }
+  }, [canUndo, undo]);
+
+  const handleRedo = useCallback(() => {
+    if (canRedo) {
+      redo();
+    }
+  }, [canRedo, redo]);
+
+  useKeyboardShortcuts({
+    reactFlow,
+    undo: handleUndo,
+    redo: handleRedo,
+  });
+
+  return (
+    <div className="absolute bottom-28 left-4 z-20 flex items-center rounded-full border border-surface-border bg-surface/95 p-1 shadow-xl backdrop-blur-sm">
+      <div className="flex items-center gap-1">
+        <ControlButton
+          label="Zoom out"
+          title="Zoom out"
+          onClick={handleZoomOut}
+        >
+          <Minus aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+        <ControlButton
+          label="Fit view"
+          title="Fit view"
+          onClick={handleFitView}
+        >
+          <ScanLine aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+        <ControlButton label="Zoom in" title="Zoom in" onClick={handleZoomIn}>
+          <Plus aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+      </div>
+      <div className="mx-1 h-7 w-px bg-surface-border" />
+      <div className="flex items-center gap-1">
+        <ControlButton
+          label="Undo"
+          title="Undo"
+          onClick={handleUndo}
+          disabled={!canUndo}
+        >
+          <RotateCcw aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+        <ControlButton
+          label="Redo"
+          title="Redo"
+          onClick={handleRedo}
+          disabled={!canRedo}
+        >
+          <RotateCw aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+      </div>
+    </div>
+  );
+}
+
+function FlowCanvasContent({
+  onRegisterImport,
+}: {
+  onRegisterImport: (importTemplate: (template: CanvasTemplate) => void) => void;
+}) {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
     useLiveblocksFlow<CanvasNode, CanvasEdge>({
       nodes: { initial: [] },
@@ -59,40 +181,61 @@ function FlowCanvasContent() {
       suspense: true,
     });
   const { screenToFlowPosition } = useReactFlow<CanvasNode, CanvasEdge>();
+  const reactFlow = useReactFlow<CanvasNode, CanvasEdge>();
 
-  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const rawPayload = event.dataTransfer.getData(SHAPE_DRAG_TYPE);
-    if (!rawPayload) return;
+  const importTemplate = useCallback(
+    (template: CanvasTemplate) => {
+      if (nodes.length) onNodesChange(nodes.map((node) => ({ type: "remove" as const, id: node.id })));
+      if (edges.length) onEdgesChange(edges.map((edge) => ({ type: "remove" as const, id: edge.id })));
+      onNodesChange(template.nodes.map((node) => ({ type: "add" as const, item: node })));
+      onEdgesChange(template.edges.map((edge) => ({ type: "add" as const, item: edge })));
+      window.requestAnimationFrame(() => reactFlow.fitView({ duration: 250, padding: 0.2 }));
+    },
+    [edges, nodes, onEdgesChange, onNodesChange, reactFlow],
+  );
 
-    let payload: ShapeDragPayload;
-    try {
-      payload = JSON.parse(rawPayload) as ShapeDragPayload;
-    } catch {
-      return;
-    }
-    if (
-      !NODE_SHAPES.includes(payload.shape) ||
-      !Number.isFinite(payload.width) ||
-      !Number.isFinite(payload.height)
-    ) return;
+  useEffect(() => onRegisterImport(importTemplate), [importTemplate, onRegisterImport]);
 
-    const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
-    nodeCounter += 1;
-    const node: CanvasNode = {
-      id: `${payload.shape}-${Date.now()}-${nodeCounter}`,
-      type: "canvasNode",
-      position,
-      width: payload.width,
-      height: payload.height,
-      data: {
-        label: "",
-        color: NODE_COLORS[0].background,
-        shape: payload.shape,
-      },
-    };
-    onNodesChange([{ type: "add", item: node }]);
-  }, [onNodesChange, screenToFlowPosition]);
+  const handleDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      const rawPayload = event.dataTransfer.getData(SHAPE_DRAG_TYPE);
+      if (!rawPayload) return;
+
+      let payload: ShapeDragPayload;
+      try {
+        payload = JSON.parse(rawPayload) as ShapeDragPayload;
+      } catch {
+        return;
+      }
+      if (
+        !NODE_SHAPES.includes(payload.shape) ||
+        !Number.isFinite(payload.width) ||
+        !Number.isFinite(payload.height)
+      )
+        return;
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      nodeCounter += 1;
+      const node: CanvasNode = {
+        id: `${payload.shape}-${Date.now()}-${nodeCounter}`,
+        type: "canvasNode",
+        position,
+        width: payload.width,
+        height: payload.height,
+        data: {
+          label: "",
+          color: NODE_COLORS[0].background,
+          shape: payload.shape,
+        },
+      };
+      onNodesChange([{ type: "add", item: node }]);
+    },
+    [onNodesChange, screenToFlowPosition],
+  );
 
   return (
     <div
@@ -106,6 +249,7 @@ function FlowCanvasContent() {
       onDrop={handleDrop}
     >
       <CanvasConnectionState />
+      <CanvasControls />
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -113,29 +257,43 @@ function FlowCanvasContent() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={NODE_TYPES}
+        edgeTypes={EDGE_TYPES}
+        defaultEdgeOptions={{
+          type: "canvasEdge",
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            width: 12,
+            height: 12,
+            color: "#f8fafc",
+          },
+          style: { stroke: "rgba(248, 250, 252, 0.8)", strokeWidth: 1.5 },
+        }}
+        connectionLineStyle={{
+          stroke: "rgba(248, 250, 252, 0.8)",
+          strokeWidth: 1.5,
+        }}
         connectionMode={ConnectionMode.Loose}
         fitView
       >
         <ShapePanel />
-        <MiniMap />
         <Background variant={BackgroundVariant.Dots} />
       </ReactFlow>
     </div>
   );
 }
 
-function FlowCanvas() {
+function FlowCanvas({ onRegisterImport }: { onRegisterImport: (importTemplate: (template: CanvasTemplate) => void) => void }) {
   return (
     <ReactFlowProvider>
-      <FlowCanvasContent />
+      <FlowCanvasContent onRegisterImport={onRegisterImport} />
     </ReactFlowProvider>
   );
 }
 
-export function CollaborativeCanvas({ roomId }: { roomId: string }) {
+export function CollaborativeCanvas({ roomId, onRegisterImport }: { roomId: string; onRegisterImport: (handler: (template: CanvasTemplate) => void) => void }) {
   return (
     <ClientSideSuspense fallback={<CanvasLoading />}>
-      <FlowCanvas key={roomId} />
+      <FlowCanvas key={roomId} onRegisterImport={onRegisterImport} />
     </ClientSideSuspense>
   );
 }
