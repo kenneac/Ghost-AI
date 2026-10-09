@@ -295,8 +295,6 @@ export function CanvasNodeView({
             event.stopPropagation();
             setIsEditing(true);
           }}
-          onMouseDown={(event) => event.stopPropagation()}
-          onClick={(event) => event.stopPropagation()}
           className="nodrag nopan absolute inset-0 z-10 flex items-center justify-center bg-transparent text-sm text-copy-muted"
         >
           {!label ? (

@@ -48,6 +48,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
+- Canvas selection fix: the full-node label overlay stopped `mousedown` and `click` propagation, preventing React Flow from selecting nodes on a single click. Removed those stops while retaining `nodrag`/`nopan` and double-click label editing. `npx tsc --noEmit` and `npm run build` pass; focused ESLint reports the existing `setState`-in-effect violation in `canvas-node.tsx`.
 - Feature 16 adds custom canvas edges with a right-angle smooth-step path, hover and selection emphasis, arrow markers, and a live inline label editor backed by `ReactFlow` edge state. The feature uses all four node sides with dual source/target handles, keeps default handles subtle until hover, and passes a production `npm run build` check.
 - Feature 15 adds a selected-node toolbar using the existing eight canvas color pairs. Swatch changes update both background and text colors through the collaborative node state. `npx tsc --noEmit` and `git diff --check` pass; the production build exits after optimized compilation starts without a completion summary.
 - Feature 14 adds minimum-bounded resize handles and centered inline label editing to the collaborative node renderer. Label edits use React Flow's provider-scoped node update API and remain synchronized through Liveblocks.
