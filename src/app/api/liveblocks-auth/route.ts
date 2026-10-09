@@ -40,6 +40,7 @@ export async function POST(request: Request) {
   const name =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     user?.username ||
+    user?.emailAddresses[0]?.emailAddress ||
     "Anonymous";
   const avatar = user?.imageUrl ?? "";
   const color = getCursorColor(userId);
