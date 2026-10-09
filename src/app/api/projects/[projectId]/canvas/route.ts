@@ -32,7 +32,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
         access: "private",
         addRandomSuffix: true,
         contentType: "application/json",
-        allowOverwrite: false,
+        allowOverwrite: true,
       },
     );
   } catch (error) {
