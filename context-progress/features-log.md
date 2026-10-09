@@ -567,3 +567,74 @@ None.
 - `git diff --check` passed.
 - `npm run build` stalled at optimized production compilation without diagnostics and was interrupted.
 - `npx tsc --noEmit` stalled without diagnostics and was interrupted.
+
+---
+
+### Feature 22: Private canvas Blob access
+
+**Date:** 2026-10-09
+
+**Description:** Updated canvas persistence for the private Vercel Blob store. Uploads use private access and save the pathname in the project record; authorized canvas loads stream through an authenticated application route.
+
+#### New Files
+
+- `src/app/api/canvas/[projectId]/route.ts`
+  - Checks Clerk identity and project membership, reads the Blob pathname from Prisma, and streams private canvas JSON with `private, no-store` caching.
+
+#### Updated Files
+
+- `src/app/api/projects/[projectId]/canvas/route.ts`
+  - Uploads canvas snapshots with private access and stores the returned pathname instead of a URL.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Loads saved canvas JSON from the authenticated canvas streaming route.
+- `prisma/models/project.prisma`
+  - Renames the model property to `canvasBlobPath` while retaining the existing database column mapping.
+- `context/architecture-context.md`
+  - Documents pathname references and authenticated private Blob reads.
+- `context/code-standards.md`
+  - Requires authenticated routes for serving private Blob content.
+- `context/feature-specs/05-prisma.md`
+  - Updates the canvas storage field name.
+- `context/feature-specs/21-canvas-autosave.md`
+  - Specifies private Blob pathname storage and authenticated reads.
+- `context-progress/progress-tracker.md`
+  - Records Feature 22 implementation and verification.
+
+#### Verification
+
+- `@vercel/blob` 2.8.1 already meets the required minimum version.
+- `npx prisma generate --schema prisma` passed.
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+
+---
+
+### Feature 21: Canvas autosave
+
+**Date:** 2026-10-09
+
+**Description:** Added authenticated canvas snapshot persistence through Vercel Blob, debounced saves from the collaborative Liveblocks canvas, restore only when a connected room has no nodes or edges, and a compact save status indicator in the editor navbar.
+
+#### New Files
+
+- `src/app/api/projects/[projectId]/canvas/route.ts`
+  - Adds membership-checked `GET` and `PUT` endpoints to retrieve snapshots and upload canvas JSON to Vercel Blob while saving its URL in the existing Prisma field.
+- `src/hooks/use-canvas-autosave.ts`
+  - Debounces node and edge saves and reports saving, saved, and error states.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Restores saved state only after connection and only if the shared room remains empty; enables autosave after the restore check.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Passes save status updates from the shared canvas to its editor parent.
+- `src/components/editor/editor-workspace.tsx`
+  - Displays the canvas save status in the workspace navbar.
+- `context-progress/progress-tracker.md`
+  - Records Feature 21 implementation and verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` reached optimized production compilation but returned without a completion summary.

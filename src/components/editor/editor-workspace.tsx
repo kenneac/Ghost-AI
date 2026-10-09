@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Bot, Layers3, Share2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Bot, Check, CircleAlert, Cloud, Layers3, Share2 } from "lucide-react";
 
 import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { ProjectSidebar } from "@/components/editor/project-sidebar";
@@ -14,6 +14,7 @@ import { AiSidebar } from "@/components/editor/ai-sidebar";
 import type { ProjectListItem } from "@/lib/project-data";
 import type { CanvasTemplate } from "@/components/editor/starter-templates";
 import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal";
+import type { CanvasSaveStatus } from "@/hooks/use-canvas-autosave";
 
 type EditorWorkspaceProps = {
   project: ProjectListItem;
@@ -33,6 +34,8 @@ export function EditorWorkspace({
   const [importTemplate, setImportTemplate] = useState<
     ((template: CanvasTemplate) => void) | null
   >(null);
+  const [saveStatus, setSaveStatus] = useState<CanvasSaveStatus>("saved");
+  const handleSaveStatusChange = useCallback((status: CanvasSaveStatus) => setSaveStatus(status), []);
   const registerImport = (handler: (template: CanvasTemplate) => void) =>
     setImportTemplate(() => handler);
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -131,6 +134,12 @@ export function EditorWorkspace({
         title={project.name}
         actions={
           <>
+            <div className="flex items-center gap-1.5 px-2 text-xs text-copy-muted" role="status" aria-live="polite">
+              {saveStatus === "saving" ? <Cloud className="h-3.5 w-3.5 animate-pulse" /> : null}
+              {saveStatus === "saved" ? <Check className="h-3.5 w-3.5 text-state-success" /> : null}
+              {saveStatus === "error" ? <CircleAlert className="h-3.5 w-3.5 text-state-error" /> : null}
+              <span>{saveStatus === "saving" ? "Saving" : saveStatus === "saved" ? "Saved" : "Save error"}</span>
+            </div>
             <Button
               type="button"
               variant="outline"
@@ -196,6 +205,7 @@ export function EditorWorkspace({
         >
           <LiveblocksCanvasRoom
             roomId={project.id}
+            onSaveStatusChange={handleSaveStatusChange}
             onRegisterImport={registerImport}
           />
         </section>

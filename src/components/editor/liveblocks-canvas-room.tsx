@@ -7,9 +7,11 @@ import type { CanvasTemplate } from "@/components/editor/starter-templates";
 
 export function LiveblocksCanvasRoom({
   roomId,
+  onSaveStatusChange,
   onRegisterImport,
 }: {
   roomId: string;
+  onSaveStatusChange: (status: "saving" | "saved" | "error") => void;
   onRegisterImport: (handler: (template: CanvasTemplate) => void) => void;
 }) {
   return (
@@ -20,6 +22,7 @@ export function LiveblocksCanvasRoom({
       >
         <CollaborativeCanvas
           roomId={roomId}
+          onSaveStatusChange={onSaveStatusChange}
           onRegisterImport={onRegisterImport}
         />
       </RoomProvider>

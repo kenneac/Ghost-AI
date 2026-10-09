@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 20: AI sidebar shell — implemented; build and type-check verification stalled
+- Feature 22: private canvas Blob access — implemented; Prisma Client generation and TypeScript verification passed
 
 ## Current Goal
 
-- Re-run production build and TypeScript verification for the implemented AI sidebar shell.
+- Implemented Feature 22; no database migration or environment changes were required.
 
 ## Completed
 
@@ -24,9 +24,12 @@ Update this file whenever the current phase, active feature, or implementation s
 - Sidebar project navigation fix: project names now link to their workspace from both the editor home and workspace sidebar.
 - Feature 19: predefined starter template library with canvas previews and collaborative canvas replacement.
 - Feature 20: canvas-only presence avatars with Clerk user filtering, live collaborator overflow stack, and Liveblocks-driven cursor tracking for other participants.
+- Feature 21: authenticated Vercel Blob canvas persistence, debounced autosave, empty-room restore, and editor save status indicator; TypeScript and diff checks passed.
+- Feature 22: private Vercel Blob access — private uploads persist the pathname, and authenticated project members stream canvas data through `/api/canvas/[projectId]`.
 
 ## In Progress
 
+- None.
 
 
 ## Next Up
@@ -49,6 +52,10 @@ Update this file whenever the current phase, active feature, or implementation s
 - The Feature 05 migration is applied to the configured database with `prisma migrate deploy`.
 
 ## Session Notes
+
+- Feature 22 sets the canvas upload to private, persists `blob.pathname` in the existing mapped Prisma column, and adds an authenticated stream route that resolves the pathname only from the accessible project record. The editor now loads through that route. `@vercel/blob` 2.8.1 already meets the 2.3 requirement. Prisma Client generation, `npx tsc --noEmit`, and `git diff --check` passed; no database migration or environment edits were needed.
+
+- Feature 21 adds `PUT`/`GET /api/projects/[projectId]/canvas`, reuses `canvasJsonPath`, stores snapshots in Vercel Blob, debounces collaborative node/edge saves, and restores state only into an empty connected Liveblocks room. Project membership is checked for reads and writes. `npx tsc --noEmit` and `git diff --check` passed; `npm run build` did not report completion after optimized compilation.
 
 - Feature 20 AI sidebar shell is implemented in src/components/editor/ai-sidebar.tsx: preserved parent-controlled visibility and the floating width transition, added the tabbed Architect/Specs UI, starter prompts, local demo chat messages, auto-resizing input, auto-scroll, and static spec card. Existing theme tokens are used; this feature adds no backend or Liveblocks behavior. `npm run build` and `npx tsc --noEmit` both stalled without diagnostics during compilation/checking and were interrupted; verification remains open.
 

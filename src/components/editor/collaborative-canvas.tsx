@@ -21,7 +21,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { Minus, Plus, RotateCcw, RotateCw, ScanLine } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UserButton } from "@clerk/nextjs";
 import "@xyflow/react/dist/style.css";
 
@@ -32,6 +32,7 @@ import { CanvasNodeView } from "@/components/editor/canvas-node";
 import type { CanvasTemplate } from "@/components/editor/starter-templates";
 import { ShapePanel } from "@/components/editor/shape-panel";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useCanvasAutosave } from "@/hooks/use-canvas-autosave";
 
 const NODE_TYPES = { canvasNode: CanvasNodeView };
 const EDGE_TYPES = { canvasEdge: CanvasEdgeView };
@@ -338,8 +339,12 @@ function CanvasLiveCursors() {
 }
 
 function FlowCanvasContent({
+  projectId,
+  onSaveStatusChange,
   onRegisterImport,
 }: {
+  projectId: string;
+  onSaveStatusChange: (status: "saving" | "saved" | "error") => void;
   onRegisterImport: (
     importTemplate: (template: CanvasTemplate) => void,
   ) => void;
@@ -353,7 +358,52 @@ function FlowCanvasContent({
   const { screenToFlowPosition } = useReactFlow<CanvasNode, CanvasEdge>();
   const reactFlow = useReactFlow<CanvasNode, CanvasEdge>();
   const [myPresence, updateMyPresence] = useMyPresence();
+  const connectionStatus = useStatus();
+  const [restoreChecked, setRestoreChecked] = useState(false);
+  const saveStatus = useCanvasAutosave({
+    projectId,
+    nodes,
+    edges,
+    enabled: restoreChecked && connectionStatus === "connected",
+  });
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => onSaveStatusChange(saveStatus), [onSaveStatusChange, saveStatus]);
+
+  useEffect(() => {
+    if (restoreChecked || connectionStatus !== "connected") return;
+    if (nodes.length > 0 || edges.length > 0) {
+      setRestoreChecked(true);
+      return;
+    }
+
+    let cancelled = false;
+    void fetch(`/api/canvas/${projectId}`, { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Could not load canvas");
+        const payload: unknown = await response.json();
+        if (!payload || typeof payload !== "object" || !("canvas" in payload)) return null;
+        return payload.canvas;
+      })
+      .then((canvas: unknown) => {
+        if (cancelled) return;
+        if (
+          canvas && typeof canvas === "object" &&
+          "nodes" in canvas && Array.isArray(canvas.nodes) &&
+          "edges" in canvas && Array.isArray(canvas.edges) &&
+          nodes.length === 0 && edges.length === 0
+        ) {
+          onNodesChange(canvas.nodes.map((node) => ({ type: "add" as const, item: node as CanvasNode })));
+          onEdgesChange(canvas.edges.map((edge) => ({ type: "add" as const, item: edge as CanvasEdge })));
+        }
+        setRestoreChecked(true);
+      })
+      .catch(() => {
+        if (!cancelled) setRestoreChecked(true);
+      });
+
+    return () => { cancelled = true; };
+  }, [connectionStatus, edges, nodes, onEdgesChange, onNodesChange, projectId, restoreChecked]);
 
   const importTemplate = useCallback(
     (template: CanvasTemplate) => {
@@ -498,29 +548,35 @@ function FlowCanvasContent({
 }
 
 function FlowCanvas({
+  projectId,
+  onSaveStatusChange,
   onRegisterImport,
 }: {
+  projectId: string;
+  onSaveStatusChange: (status: "saving" | "saved" | "error") => void;
   onRegisterImport: (
     importTemplate: (template: CanvasTemplate) => void,
   ) => void;
 }) {
   return (
     <ReactFlowProvider>
-      <FlowCanvasContent onRegisterImport={onRegisterImport} />
+      <FlowCanvasContent projectId={projectId} onSaveStatusChange={onSaveStatusChange} onRegisterImport={onRegisterImport} />
     </ReactFlowProvider>
   );
 }
 
 export function CollaborativeCanvas({
   roomId,
+  onSaveStatusChange,
   onRegisterImport,
 }: {
   roomId: string;
+  onSaveStatusChange: (status: "saving" | "saved" | "error") => void;
   onRegisterImport: (handler: (template: CanvasTemplate) => void) => void;
 }) {
   return (
     <ClientSideSuspense fallback={<CanvasLoading />}>
-      <FlowCanvas key={roomId} onRegisterImport={onRegisterImport} />
+      <FlowCanvas key={roomId} projectId={roomId} onSaveStatusChange={onSaveStatusChange} onRegisterImport={onRegisterImport} />
     </ClientSideSuspense>
   );
 }
