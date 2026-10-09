@@ -8,7 +8,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Finalize the feature documentation and log the completed edge behavior work in the feature log.
+- Record the inline node label editing fix and continue with the next implementation unit.
 
 ## Completed
 
@@ -20,6 +20,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 08: authenticated `/editor/[roomId]` workspace shell with owner/collaborator access checks, an access-denied state, active-project sidebar navigation, and project-aware workspace URLs.
 - Feature 09: workspace share dialog with Clerk-enriched collaborator list, owner-only invite/removal APIs, read-only collaborator access, and project link copying.
 - Feature 16: custom canvas edge behavior with subtle node handles, default arrowed canvas edges, custom smooth-step edge rendering, and inline label editing that updates through the collaborative edge flow.
+- Issue 1 fix: inline node label editing no longer renders a duplicate static label underneath the textarea; the editor now keeps a single crisp text layer while typing and remains synced through React Flow node state.
 - Sidebar project navigation fix: project names now link to their workspace from both the editor home and workspace sidebar.
 
 ## In Progress

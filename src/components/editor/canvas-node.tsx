@@ -153,6 +153,7 @@ export function CanvasNodeView({
     setIsEditing(false);
     if (label !== data.label) updateNodeData(id, { label });
   }, [data.label, id, label, updateNodeData]);
+  const visibleLabel = isEditing ? "" : label;
 
   return (
     <div className="group relative" style={{ width, height }}>
@@ -219,7 +220,7 @@ export function CanvasNodeView({
         height={height ?? 100}
         color={data.color}
         textColor={data.textColor ?? NODE_COLORS[0].text}
-        label={label}
+        label={visibleLabel}
       />
       {selected && !isEditing ? (
         <div
