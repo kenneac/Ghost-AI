@@ -334,3 +334,90 @@ None.
   - Recorded the fix and verification status.
 
 ---
+
+### Feature 14: Node shapes and drag preview
+
+**Date:** 2026-10-08
+
+**Description:** Replaced the placeholder canvas node with all six specified shape variants. Shape drags now show a cursor-attached ghost preview using the shape and default size that will be dropped, while nodes remain synchronized through the existing collaborative canvas state.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/canvas-node.tsx`
+  - Renders rectangle, pill, and circle with CSS and diamond, hexagon, and cylinder with scalable SVG geometry.
+  - Highlights selected node borders and retains four hover-revealed connection handles.
+- `src/components/editor/shape-panel.tsx`
+  - Adds a pointer-following ghost preview during shape drags and clears it when dragging ends.
+  - Reuses the panel’s existing default shape dimensions and node visual renderer.
+- `context-progress/progress-tracker.md`
+  - Records Feature 13 implementation and the production build verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` exited after optimized compilation started without a success or error summary; production build verification remains open.
+
+---
+
+### Feature 15: Node resizing and inline label editing
+
+**Date:** 2026-10-09
+
+**Description:** Added selection-only resize controls with minimum dimensions and centered inline label editing for canvas nodes. Label changes update through React Flow’s provider-scoped node API and remain synchronized in the existing Liveblocks flow.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/canvas-node.tsx`
+  - Adds subtle selected-node resize handles with 80×60 minimum dimensions.
+  - Adds centered double-click label editing, empty-label placeholder, live collaborative updates, blur commit, and Escape cancel.
+  - Stops text interactions from initiating node dragging or canvas panning.
+- `context-progress/progress-tracker.md`
+  - Records Feature 14 implementation and production build verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` compiled and finished TypeScript, then stalled during page-data collection without a final result.
+
+---
+
+### Feature 16: Node color toolbar
+
+**Date:** 2026-10-09
+
+**Description:** Added a compact toolbar above selected nodes with one swatch for each predefined canvas color pair. Selecting a swatch immediately updates both the node background and paired text color through the collaborative node state.
+
+#### New Files
+
+None.
+
+#### Updated Files
+
+- `src/components/editor/canvas-node.tsx`
+  - Adds the selected-node floating color toolbar with clear active state and a tight hover glow based on each pair’s text color.
+  - Applies paired background and text colors through React Flow’s Liveblocks-backed `updateNodeData` API.
+  - Renders node labels and inline editing text with the selected paired text color.
+- `src/types/canvas.ts`
+  - Adds optional paired text color to canvas node data for existing nodes.
+- `src/components/editor/shape-panel.tsx`
+  - Supplies the default text color when rendering the drag preview.
+- `context-progress/progress-tracker.md`
+  - Records Feature 15 implementation and build verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` exited after optimized compilation started without a completion summary.
+
+---

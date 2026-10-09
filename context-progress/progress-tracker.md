@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Features 10–12 and canvas provider error fix — implemented; TypeScript verified
+- Feature 15: selected node color toolbar — implemented; TypeScript verified
 
 ## Current Goal
 
-- Complete production build verification; build now compiles and type checks but stalls during page-data collection in this environment.
+- Complete production build verification; Feature 15 passes TypeScript but the build exits after optimized compilation starts without a completion summary.
 
 ## Completed
 
@@ -23,12 +23,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## In Progress
 
-- Fixed the React Flow provider context error reported in `context-issues/current-issues.md` by moving the provider above the hook-using canvas component.
+- Production build verification for Feature 15; `npm run build` exits after optimized compilation starts without a completion summary.
 
 ## Next Up
 
-- Complete `npm run build` verification. `@liveblocks/node` is installed, TypeScript passes, and Next.js compiles; the current build stalls during page-data collection.
-- Continue canvas work with its next defined feature.
+- Complete production build verification; earlier builds stalled during page-data collection.
 
 ## Open Questions
 
@@ -46,6 +45,10 @@ Update this file whenever the current phase, active feature, or implementation s
 - The Feature 05 migration is applied to the configured database with `prisma migrate deploy`.
 
 ## Session Notes
+
+- Feature 15 adds a selected-node toolbar using the existing eight canvas color pairs. Swatch changes update both background and text colors through the collaborative node state. `npx tsc --noEmit` and `git diff --check` pass; the production build exits after optimized compilation starts without a completion summary.
+- Feature 14 adds minimum-bounded resize handles and centered inline label editing to the collaborative node renderer. Label edits use React Flow's provider-scoped node update API and remain synchronized through Liveblocks.
+- Feature 13 implementation is complete: six shape variants and a cursor-attached ghost preview are connected to the existing collaborative canvas and drag/drop flow.
 
 - Feature 10 adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation.
 - Feature 11 adds the client room wrapper, synchronized React Flow nodes/edges, connection status feedback, and shared canvas types.

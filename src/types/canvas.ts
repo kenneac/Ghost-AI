@@ -3,6 +3,7 @@ import type { Edge, Node } from "@xyflow/react";
 export type CanvasNodeData = {
   label: string;
   color: string;
+  textColor?: string;
   shape: string;
 };
 
