@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Added the Trigger.dev v4 project scaffold: task directory, starter task, project config, package scripts, TypeScript inclusion, and local state ignore rule. SDK and build dependencies are declared; local installation and Trigger.dev account/project credentials remain before tasks can register or run.
+
 - Canvas Delete/Backspace now removes selected graph elements through Liveblocks' dedicated onDelete mutation because the flow change callbacks ignore remove changes.
 
 - Fixed the four current canvas/workspace issues: collaborative keyboard deletion, cursor-centered shape drops, no initial auto-fit on node insertion, and editor-home-only navbar UserButton.
