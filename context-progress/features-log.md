@@ -54,7 +54,6 @@ Copy this structure for every new feature:
 
 # Features
 
-
 ### Feature 1: Prisma project metadata foundation
 
 **Date:** 2026-10-07
@@ -229,6 +228,7 @@ Copy this structure for every new feature:
   - Records the confirmed cause and completed navigation fix.
 
 ---
+
 ### Feature 10: Liveblocks setup
 
 **Date:** 2026-10-08
@@ -255,6 +255,7 @@ Copy this structure for every new feature:
 - `@liveblocks/node` is absent from the installed dependencies; `npm install @liveblocks/node` stalled because npm registry access is unavailable. Re-run installation and build verification with registry access.
 
 ---
+
 ### Feature 12: Shape panel
 
 **Date:** 2026-10-08
@@ -284,6 +285,7 @@ Added a floating bottom-center shape toolbar to the shared canvas. Users can dra
 - `npm run build` stalled during optimized compilation and was interrupted; a successful production build remains unverified.
 
 ---
+
 ### Feature 11: Base collaborative canvas
 
 **Date:** 2026-10-08
@@ -419,5 +421,35 @@ None.
 - `npx tsc --noEmit` passed.
 - `git diff --check` passed.
 - `npm run build` exited after optimized compilation started without a completion summary.
+
+---
+
+### Feature 17: Custom canvas edge behavior
+
+**Date:** 2026-10-09
+
+**Description:** Added custom edge rendering for the collaborative canvas with four-sided connection handles, arrowed smooth-step paths, hover emphasis, and inline label editing that persists through the shared edge data flow.
+
+#### New Files
+
+- `src/components/editor/canvas-edge.tsx`
+  - Renders the custom canvas edge with smooth-step routing, arrow markers, hover/selection state, and inline editable labels.
+  - Uses `EdgeLabelRenderer` and `getSmoothStepPath` midpoint coordinates so labels remain aligned with the edge path without manual midpoint math.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Registers the custom edge renderer and default edge options so all new connections use the canvas edge style with arrowheads and a right-angle routing path.
+- `src/components/editor/canvas-node.tsx`
+  - Adds subtle connection handles on all four sides with a hover fade-in, matching the spec for bidirectional connection points on every node edge.
+- `src/types/canvas.ts`
+  - Stores editable edge labels in the edge `data` payload so labels flow through the collaborative canvas state instead of built-in edge text fields.
+- `context-progress/progress-tracker.md`
+  - Marks the feature as implemented and records the completed build verification.
+
+#### Verification
+
+- `npm run build` passed.
+- `git diff --check` passed.
 
 ---

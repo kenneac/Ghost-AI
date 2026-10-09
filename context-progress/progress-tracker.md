@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 15: selected node color toolbar — implemented; TypeScript verified
+- Feature 16: custom canvas edge behavior — implemented and build verified
 
 ## Current Goal
 
-- Complete production build verification; Feature 15 passes TypeScript but the build exits after optimized compilation starts without a completion summary.
+- Finalize the feature documentation and log the completed edge behavior work in the feature log.
 
 ## Completed
 
@@ -19,15 +19,16 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 07: editor home project API wiring — server-side fetch for owned/shared lists, sidebar-only actions for project owners, create/rename/delete mutations through the real API, and successful `npm run build` verification.
 - Feature 08: authenticated `/editor/[roomId]` workspace shell with owner/collaborator access checks, an access-denied state, active-project sidebar navigation, and project-aware workspace URLs.
 - Feature 09: workspace share dialog with Clerk-enriched collaborator list, owner-only invite/removal APIs, read-only collaborator access, and project link copying.
+- Feature 16: custom canvas edge behavior with subtle node handles, default arrowed canvas edges, custom smooth-step edge rendering, and inline label editing that updates through the collaborative edge flow.
 - Sidebar project navigation fix: project names now link to their workspace from both the editor home and workspace sidebar.
 
 ## In Progress
 
-- Production build verification for Feature 15; `npm run build` exits after optimized compilation starts without a completion summary.
+- None.
 
 ## Next Up
 
-- Complete production build verification; earlier builds stalled during page-data collection.
+- Log the completed custom edge behavior feature in the feature log and continue with the next implementation unit.
 
 ## Open Questions
 
@@ -46,6 +47,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
+- Feature 16 adds custom canvas edges with a right-angle smooth-step path, hover and selection emphasis, arrow markers, and a live inline label editor backed by `ReactFlow` edge state. The feature uses all four node sides with dual source/target handles, keeps default handles subtle until hover, and passes a production `npm run build` check.
 - Feature 15 adds a selected-node toolbar using the existing eight canvas color pairs. Swatch changes update both background and text colors through the collaborative node state. `npx tsc --noEmit` and `git diff --check` pass; the production build exits after optimized compilation starts without a completion summary.
 - Feature 14 adds minimum-bounded resize handles and centered inline label editing to the collaborative node renderer. Label edits use React Flow's provider-scoped node update API and remain synchronized through Liveblocks.
 - Feature 13 implementation is complete: six shape variants and a cursor-attached ghost preview are connected to the existing collaborative canvas and drag/drop flow.
