@@ -541,3 +541,29 @@ None.
 - `npm run build` passed.
 
 ---
+
+### Feature 20: AI sidebar shell
+
+**Date:** 2026-10-09
+
+**Description:** Completed the floating AI workspace sidebar UI with parent-controlled visibility, the existing right-side width transition, Architect and Specs tabs, a local demo chat flow, and a static spec card. The feature remains UI-only and adds no backend or Liveblocks behavior.
+
+#### New Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Provides the AI Workspace header, close control, tabbed layout, empty state, three starter prompt chips, user and assistant message bubbles, auto-resizing textarea, Enter/Shift+Enter submission behavior, and auto-scrolling chat area.
+  - Adds the Specs tab with Generate Spec control, demo spec summary card, and disabled download action.
+  - Uses existing project color tokens and keeps open state controlled by the editor workspace parent.
+
+#### Updated Files
+
+- `context-progress/progress-tracker.md`
+  - Records Feature 20 implementation and the verification status.
+- `context-progress/features-log.md`
+  - Logs this feature implementation.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run build` stalled at optimized production compilation without diagnostics and was interrupted.
+- `npx tsc --noEmit` stalled without diagnostics and was interrupted.

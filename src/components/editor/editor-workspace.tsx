@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProjectDialogs } from "@/hooks/use-project-dialogs";
 import { LiveblocksCanvasRoom } from "@/components/editor/liveblocks-canvas-room";
+import { AiSidebar } from "@/components/editor/ai-sidebar";
 import type { ProjectListItem } from "@/lib/project-data";
 import type { CanvasTemplate } from "@/components/editor/starter-templates";
 import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal";
@@ -29,8 +30,11 @@ export function EditorWorkspace({
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isTemplatesDialogOpen, setIsTemplatesDialogOpen] = useState(false);
-  const [importTemplate, setImportTemplate] = useState<((template: CanvasTemplate) => void) | null>(null);
-  const registerImport = (handler: (template: CanvasTemplate) => void) => setImportTemplate(() => handler);
+  const [importTemplate, setImportTemplate] = useState<
+    ((template: CanvasTemplate) => void) | null
+  >(null);
+  const registerImport = (handler: (template: CanvasTemplate) => void) =>
+    setImportTemplate(() => handler);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedTriggerRef = useRef<HTMLElement | null>(null);
 
@@ -127,7 +131,13 @@ export function EditorWorkspace({
         title={project.name}
         actions={
           <>
-            <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setIsTemplatesDialogOpen(true)}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setIsTemplatesDialogOpen(true)}
+            >
               <Layers3 className="h-4 w-4" />
               Templates
             </Button>
@@ -160,7 +170,11 @@ export function EditorWorkspace({
         open={isShareDialogOpen}
         onOpenChange={setIsShareDialogOpen}
       />
-      <StarterTemplatesModal open={isTemplatesDialogOpen} onOpenChange={setIsTemplatesDialogOpen} onImport={(template) => importTemplate?.(template)} />
+      <StarterTemplatesModal
+        open={isTemplatesDialogOpen}
+        onOpenChange={setIsTemplatesDialogOpen}
+        onImport={(template) => importTemplate?.(template)}
+      />
       <ProjectSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -180,24 +194,15 @@ export function EditorWorkspace({
           aria-label="Canvas workspace"
           className="relative flex min-w-0 flex-1 overflow-hidden bg-base"
         >
-          <LiveblocksCanvasRoom roomId={project.id} onRegisterImport={registerImport} />
+          <LiveblocksCanvasRoom
+            roomId={project.id}
+            onRegisterImport={registerImport}
+          />
         </section>
-        <aside
-          aria-label="AI assistant sidebar"
-          className={`h-full shrink-0 overflow-hidden border-l border-surface-border bg-surface transition-[width] duration-200 ${isAiSidebarOpen ? "w-80" : "w-0 border-l-0"}`}
-          aria-hidden={!isAiSidebarOpen}
-        >
-          {isAiSidebarOpen ? (
-            <div className="w-80 p-5">
-              <h2 className="text-sm font-semibold text-copy-primary">
-                AI Assistant
-              </h2>
-              <p className="mt-2 text-sm text-copy-muted">
-                AI chat will be available here.
-              </p>
-            </div>
-          ) : null}
-        </aside>
+        <AiSidebar
+          isOpen={isAiSidebarOpen}
+          onClose={() => setIsAiSidebarOpen(false)}
+        />
       </div>
 
       {dialogMode ? (

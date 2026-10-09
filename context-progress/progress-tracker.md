@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 20: presence avatars and live cursors — implemented and build verified
+- Feature 20: AI sidebar shell — implemented; build and type-check verification stalled
 
 ## Current Goal
 
-- Log the completed canvas-presence feature and continue with the next implementation unit.
+- Re-run production build and TypeScript verification for the implemented AI sidebar shell.
 
 ## Completed
 
@@ -27,11 +27,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## In Progress
 
-- None.
+
 
 ## Next Up
 
-- Continue with the next implementation unit after logging Feature 20.
+
 
 ## Open Questions
 
@@ -49,6 +49,9 @@ Update this file whenever the current phase, active feature, or implementation s
 - The Feature 05 migration is applied to the configured database with `prisma migrate deploy`.
 
 ## Session Notes
+
+- Feature 20 AI sidebar shell is implemented in src/components/editor/ai-sidebar.tsx: preserved parent-controlled visibility and the floating width transition, added the tabbed Architect/Specs UI, starter prompts, local demo chat messages, auto-resizing input, auto-scroll, and static spec card. Existing theme tokens are used; this feature adds no backend or Liveblocks behavior. `npm run build` and `npx tsc --noEmit` both stalled without diagnostics during compilation/checking and were interrupted; verification remains open.
+
 
 - Canvas selection fix: the full-node label overlay stopped `mousedown` and `click` propagation, preventing React Flow from selecting nodes on a single click. Removed those stops while retaining `nodrag`/`nopan` and double-click label editing. `npx tsc --noEmit` and `npm run build` pass; focused ESLint reports the existing `setState`-in-effect violation in `canvas-node.tsx`.
 - Feature 16 adds custom canvas edges with a right-angle smooth-step path, hover and selection emphasis, arrow markers, and a live inline label editor backed by `ReactFlow` edge state. The feature uses all four node sides with dual source/target handles, keeps default handles subtle until hover, and passes a production `npm run build` check.
