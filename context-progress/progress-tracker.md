@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 19: starter templates — implemented and build verified
+- Feature 20: presence avatars and live cursors — implemented and build verified
 
 ## Current Goal
 
-- Log the completed starter template feature and continue with the next implementation unit.
+- Log the completed canvas-presence feature and continue with the next implementation unit.
 
 ## Completed
 
@@ -23,6 +23,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - Issue 1 fix: inline node label editing no longer renders a duplicate static label underneath the textarea; the editor now keeps a single crisp text layer while typing and remains synced through React Flow node state.
 - Sidebar project navigation fix: project names now link to their workspace from both the editor home and workspace sidebar.
 - Feature 19: predefined starter template library with canvas previews and collaborative canvas replacement.
+- Feature 20: canvas-only presence avatars with Clerk user filtering, live collaborator overflow stack, and Liveblocks-driven cursor tracking for other participants.
 
 ## In Progress
 
@@ -30,7 +31,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Continue with the next implementation unit after logging Feature 19.
+- Continue with the next implementation unit after logging Feature 20.
 
 ## Open Questions
 
@@ -55,6 +56,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 14 adds minimum-bounded resize handles and centered inline label editing to the collaborative node renderer. Label edits use React Flow's provider-scoped node update API and remain synchronized through Liveblocks.
 - Feature 13 implementation is complete: six shape variants and a cursor-attached ghost preview are connected to the existing collaborative canvas and drag/drop flow.
 - Feature 19 adds three predefined architecture templates, a lightweight scaled SVG preview grid, and a navbar import action that removes current collaborative nodes/edges before loading the selected template and fitting the view. `npm run build`, `npx tsc --noEmit`, and `git diff --check` pass.
+- Feature 20 adds a canvas-only collaborator stack anchored in the top-right of the editor room, filters the current Clerk user out of Liveblocks presence, and broadcasts live cursor positions from React Flow mouse events while rendering other participants as colored cursor badges and avatars. `npm run build` passed.
 
 - Feature 10 adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation.
 - Feature 11 adds the client room wrapper, synchronized React Flow nodes/edges, connection status feedback, and shared canvas types.

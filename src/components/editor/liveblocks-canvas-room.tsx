@@ -16,9 +16,12 @@ export function LiveblocksCanvasRoom({
     <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
       <RoomProvider
         id={roomId}
-        initialPresence={{ cursor: null, isThinking: false }}
+        initialPresence={{ cursor: null, thinking: false }}
       >
-        <CollaborativeCanvas roomId={roomId} onRegisterImport={onRegisterImport} />
+        <CollaborativeCanvas
+          roomId={roomId}
+          onRegisterImport={onRegisterImport}
+        />
       </RoomProvider>
     </LiveblocksProvider>
   );

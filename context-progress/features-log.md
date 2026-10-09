@@ -514,3 +514,30 @@ None.
 - `git diff --check` passed.
 
 ---
+
+### Feature 20: Presence avatars and live cursors
+
+**Date:** 2026-10-09
+
+**Description:** Added a canvas-only presence stack in the editor room, filtered the current Clerk user from the collaborator list, and broadcasted live cursor positions from React Flow mouse events so other participants appear as colored avatars and cursor badges without changing the shared editor navbar.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `liveblocks.config.ts`
+  - Changes the shared Liveblocks presence type to `cursor` plus `thinking`, matching the room contract used by the canvas overlay.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Updates the room’s initial presence payload to the new `thinking` property so the canvas and room start from the same typed state.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Adds the top-right collaborator stack, excludes the signed-in Clerk user from the overlay, shows a five-avatar overflow state with initials fallback, and renders live colored cursors for other participants using Liveblocks presence and React Flow mouse events.
+- `context-progress/progress-tracker.md`
+  - Marks the feature as implemented and records the final build verification.
+
+#### Verification
+
+- `npm run build` passed.
+
+---
