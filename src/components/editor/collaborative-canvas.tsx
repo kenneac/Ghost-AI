@@ -18,6 +18,8 @@ import {
   MarkerType,
   ReactFlow,
   ReactFlowProvider,
+  useEdges,
+  useNodes,
   useReactFlow,
 } from "@xyflow/react";
 import { Minus, Plus, RotateCcw, RotateCw, ScanLine } from "lucide-react";
@@ -43,6 +45,8 @@ interface ShapeDragPayload {
   shape: NodeShape;
   width: number;
   height: number;
+  grabOffsetX: number;
+  grabOffsetY: number;
 }
 
 function getUserIdFromPresence(
@@ -349,13 +353,15 @@ function FlowCanvasContent({
     importTemplate: (template: CanvasTemplate) => void,
   ) => void;
 }) {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onDelete } =
     useLiveblocksFlow<CanvasNode, CanvasEdge>({
       nodes: { initial: [] },
       edges: { initial: [] },
       suspense: true,
     });
   const { screenToFlowPosition } = useReactFlow<CanvasNode, CanvasEdge>();
+  const flowNodes = useNodes<CanvasNode>();
+  const flowEdges = useEdges<CanvasEdge>();
   const reactFlow = useReactFlow<CanvasNode, CanvasEdge>();
   const [myPresence, updateMyPresence] = useMyPresence();
   const connectionStatus = useStatus();
@@ -456,6 +462,38 @@ function FlowCanvasContent({
     });
   }, [myPresence?.thinking, updateMyPresence]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Delete" && event.key !== "Backspace") return;
+
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.matches("input, textarea, [contenteditable='true']") ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const selectedNodes = flowNodes.filter((node) => node.selected);
+      const selectedNodeIds = new Set(selectedNodes.map((node) => node.id));
+      const selectedEdges = flowEdges.filter(
+        (edge) =>
+          edge.selected ||
+          selectedNodeIds.has(edge.source) ||
+          selectedNodeIds.has(edge.target),
+      );
+      if (selectedNodes.length === 0 && selectedEdges.length === 0) return;
+
+      event.preventDefault();
+      onDelete({ nodes: selectedNodes, edges: selectedEdges });
+    };
+
+    const container = containerRef.current;
+    container?.addEventListener("keydown", handleKeyDown);
+    return () => container?.removeEventListener("keydown", handleKeyDown);
+  }, [flowEdges, flowNodes, onDelete]);
+
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -471,13 +509,18 @@ function FlowCanvasContent({
       if (
         !NODE_SHAPES.includes(payload.shape) ||
         !Number.isFinite(payload.width) ||
-        !Number.isFinite(payload.height)
+        !Number.isFinite(payload.height) ||
+        !Number.isFinite(payload.grabOffsetX) ||
+        !Number.isFinite(payload.grabOffsetY)
       )
         return;
 
+      const bounds = containerRef.current?.getBoundingClientRect();
+      if (!bounds) return;
+
       const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+        x: bounds.left + (event.clientX - bounds.left - payload.grabOffsetX),
+        y: bounds.top + (event.clientY - bounds.top - payload.grabOffsetY),
       });
       nodeCounter += 1;
       const node: CanvasNode = {
@@ -500,7 +543,9 @@ function FlowCanvasContent({
   return (
     <div
       ref={containerRef}
+      tabIndex={0}
       className="relative h-full w-full"
+      onPointerDown={() => containerRef.current?.focus({ preventScroll: true })}
       onDragOver={(event) => {
         if (event.dataTransfer.types.includes(SHAPE_DRAG_TYPE)) {
           event.preventDefault();
@@ -519,6 +564,7 @@ function FlowCanvasContent({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        deleteKeyCode={null}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         nodeTypes={NODE_TYPES}
@@ -538,7 +584,6 @@ function FlowCanvasContent({
           strokeWidth: 1.5,
         }}
         connectionMode={ConnectionMode.Loose}
-        fitView
       >
         <ShapePanel />
         <Background variant={BackgroundVariant.Dots} />

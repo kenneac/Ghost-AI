@@ -51,9 +51,15 @@ export function ShapePanel() {
               aria-label={`Drag ${shape} onto the canvas`}
               title={shape}
               onDragStart={(event) => {
+                const bounds = event.currentTarget.getBoundingClientRect();
                 event.dataTransfer.setData(
                   "application/ghost-ai-shape",
-                  JSON.stringify({ shape, ...SHAPE_SIZES[shape] }),
+                  JSON.stringify({
+                    shape,
+                    ...SHAPE_SIZES[shape],
+                    grabOffsetX: event.clientX - bounds.left,
+                    grabOffsetY: event.clientY - bounds.top,
+                  }),
                 );
                 event.dataTransfer.effectAllowed = "copy";
                 setPreview({ shape, x: event.clientX, y: event.clientY });

@@ -132,6 +132,7 @@ export function EditorWorkspace({
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((open) => !open)}
         title={project.name}
+        showUserButton={false}
         actions={
           <>
             <div className="flex items-center gap-1.5 px-2 text-xs text-copy-muted" role="status" aria-live="polite">
