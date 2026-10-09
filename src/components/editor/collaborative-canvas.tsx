@@ -1,5 +1,6 @@
 "use client";
 
+import { useCanRedo, useCanUndo, useRedo, useUndo } from "@liveblocks/react";
 import { useLiveblocksFlow } from "@liveblocks/react-flow";
 import { ClientSideSuspense, useStatus } from "@liveblocks/react/suspense";
 import {
@@ -7,11 +8,11 @@ import {
   BackgroundVariant,
   ConnectionMode,
   MarkerType,
-  MiniMap,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
+import { Minus, Plus, RotateCcw, RotateCw, ScanLine } from "lucide-react";
 import { useCallback } from "react";
 import "@xyflow/react/dist/style.css";
 
@@ -20,6 +21,7 @@ import { NODE_COLORS, NODE_SHAPES, type NodeShape } from "@/types/canvas";
 import { CanvasEdgeView } from "@/components/editor/canvas-edge";
 import { CanvasNodeView } from "@/components/editor/canvas-node";
 import { ShapePanel } from "@/components/editor/shape-panel";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 const NODE_TYPES = { canvasNode: CanvasNodeView };
 const EDGE_TYPES = { canvasEdge: CanvasEdgeView };
@@ -53,6 +55,114 @@ function CanvasConnectionState() {
       {status === "connecting" || status === "reconnecting"
         ? "Reconnecting to the shared canvas…"
         : "Could not connect to the shared canvas. Check your connection and refresh."}
+    </div>
+  );
+}
+
+function ControlButton({
+  label,
+  title,
+  onClick,
+  disabled = false,
+  children,
+}: {
+  label: string;
+  title: string;
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      className="flex h-8 w-8 items-center justify-center rounded-full text-copy-secondary transition-colors hover:bg-bg-subtle hover:text-brand disabled:cursor-not-allowed disabled:text-copy-muted disabled:hover:bg-transparent disabled:opacity-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+function CanvasControls() {
+  const reactFlow = useReactFlow<CanvasNode, CanvasEdge>();
+  const undo = useUndo();
+  const redo = useRedo();
+  const canUndo = useCanUndo();
+  const canRedo = useCanRedo();
+
+  const handleZoomIn = useCallback(() => {
+    reactFlow.zoomIn({ duration: 180 });
+  }, [reactFlow]);
+
+  const handleZoomOut = useCallback(() => {
+    reactFlow.zoomOut({ duration: 180 });
+  }, [reactFlow]);
+
+  const handleFitView = useCallback(() => {
+    reactFlow.fitView({ duration: 200, padding: 0.2 });
+  }, [reactFlow]);
+
+  const handleUndo = useCallback(() => {
+    if (canUndo) {
+      undo();
+    }
+  }, [canUndo, undo]);
+
+  const handleRedo = useCallback(() => {
+    if (canRedo) {
+      redo();
+    }
+  }, [canRedo, redo]);
+
+  useKeyboardShortcuts({
+    reactFlow,
+    undo: handleUndo,
+    redo: handleRedo,
+  });
+
+  return (
+    <div className="absolute bottom-28 left-4 z-20 flex items-center rounded-full border border-surface-border bg-surface/95 p-1 shadow-xl backdrop-blur-sm">
+      <div className="flex items-center gap-1">
+        <ControlButton
+          label="Zoom out"
+          title="Zoom out"
+          onClick={handleZoomOut}
+        >
+          <Minus aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+        <ControlButton
+          label="Fit view"
+          title="Fit view"
+          onClick={handleFitView}
+        >
+          <ScanLine aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+        <ControlButton label="Zoom in" title="Zoom in" onClick={handleZoomIn}>
+          <Plus aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+      </div>
+      <div className="mx-1 h-7 w-px bg-surface-border" />
+      <div className="flex items-center gap-1">
+        <ControlButton
+          label="Undo"
+          title="Undo"
+          onClick={handleUndo}
+          disabled={!canUndo}
+        >
+          <RotateCcw aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+        <ControlButton
+          label="Redo"
+          title="Redo"
+          onClick={handleRedo}
+          disabled={!canRedo}
+        >
+          <RotateCw aria-hidden="true" className="h-4 w-4" />
+        </ControlButton>
+      </div>
     </div>
   );
 }
@@ -119,6 +229,7 @@ function FlowCanvasContent() {
       onDrop={handleDrop}
     >
       <CanvasConnectionState />
+      <CanvasControls />
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -145,7 +256,6 @@ function FlowCanvasContent() {
         fitView
       >
         <ShapePanel />
-        <MiniMap />
         <Background variant={BackgroundVariant.Dots} />
       </ReactFlow>
     </div>

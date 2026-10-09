@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 16: custom canvas edge behavior — implemented and build verified
+- Feature 18: canvas ergonomics — implemented and build verified
 
 ## Current Goal
 
-- Record the inline node label editing fix and continue with the next implementation unit.
+- Log the completed canvas ergonomics work and continue with the next implementation unit.
 
 ## Completed
 
@@ -29,7 +29,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Log the completed custom edge behavior feature in the feature log and continue with the next implementation unit.
+- Continue with the next implementation unit after logging the completed canvas ergonomics feature.
 
 ## Open Questions
 

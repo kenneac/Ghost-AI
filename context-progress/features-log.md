@@ -453,3 +453,31 @@ None.
 - `git diff --check` passed.
 
 ---
+
+### Feature 18: Canvas ergonomics
+
+**Date:** 2026-10-09
+
+**Description:** Added a floating canvas control bar for zoom and undo/redo, removed the minimap, and wired the same actions to keyboard shortcuts while preserving the existing collaborative Liveblocks state and room setup.
+
+#### New Files
+
+- `src/hooks/use-keyboard-shortcuts.ts`
+  - Handles `+`/`=` zoom in, `-` zoom out, and Ctrl/Cmd-based undo/redo shortcuts while ignoring events from editable inputs and text fields.
+  - Receives the React Flow instance and the history handlers so the keyboard flow matches the canvas controls.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Adds the floating bottom-left pill control bar with zoom controls (zoom out, fit view, zoom in) and history controls (undo, redo).
+  - Wires the buttons to the shared React Flow instance and Liveblocks `useUndo`/`useRedo` hooks, disables empty history states, and removes the minimap from the canvas.
+  - Keeps the existing collaborative canvas state and drag/drop behavior unchanged while integrating the new ergonomics actions.
+- `context-progress/progress-tracker.md`
+  - Marks the canvas ergonomics feature as implemented and records the final verification status.
+
+#### Verification
+
+- `npm run build` passed.
+- `git diff --check` passed.
+
+---
