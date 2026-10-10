@@ -4,6 +4,23 @@ import { apiErrorResponse, getAuthenticatedUserId } from "@/lib/project-api";
 import { getProjectForCurrentIdentity } from "@/lib/project-access";
 import { getCursorColor, liveblocks } from "@/lib/liveblocks";
 
+const AI_CHAT_FEED_ID = "ai-chat";
+
+async function ensureAiChatFeed(roomId: string) {
+  try {
+    await liveblocks.getFeed({ roomId, feedId: AI_CHAT_FEED_ID });
+    return;
+  } catch {
+    try {
+      await liveblocks.createFeed({ roomId, feedId: AI_CHAT_FEED_ID });
+      return;
+    } catch {
+      // Another room join may have created the feed concurrently.
+      await liveblocks.getFeed({ roomId, feedId: AI_CHAT_FEED_ID });
+    }
+  }
+}
+
 export async function POST(request: Request) {
   const userId = await getAuthenticatedUserId();
 
@@ -40,11 +57,13 @@ export async function POST(request: Request) {
   const name =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     user?.username ||
+    user?.emailAddresses[0]?.emailAddress ||
     "Anonymous";
   const avatar = user?.imageUrl ?? "";
   const color = getCursorColor(userId);
 
   await liveblocks.getOrCreateRoom(projectId, { defaultAccesses: [] });
+  await ensureAiChatFeed(projectId);
 
   const session = liveblocks.prepareSession(userId, {
     userInfo: { name, avatar, color },

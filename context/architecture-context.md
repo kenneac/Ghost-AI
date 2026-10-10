@@ -27,7 +27,7 @@
 - **Vercel Blob**: generated artifacts — canvas snapshots at `canvas/{projectId}.json` and specs at `specs/{projectId}/{specId}.md`.
 - Project records, spec records, and task run records belong in PostgreSQL.
 - Canvas content and Markdown output are stored in and retrieved from Vercel Blob.
-- The blob URL is stored in the database (`canvasJsonPath`, `filePath`) as the reference to the artifact.
+- The canvas Blob pathname is stored in the project record (`canvasBlobPath`); the project ID scopes the associated artifact. Private Blob content is read through an authenticated application route, never through a public URL.
 
 ## Auth and Collaboration Model
 

@@ -4,14 +4,18 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 19: starter templates — implemented and build verified
+- Spec generation persistence fix — Prisma client regenerated from the configured schema directory, restoring `prisma.projectSpec.create`; TypeScript and focused ESLint still stall without diagnostics.
 
+- Feature 25: sidebar chat feed — implementation complete; `npm run build` stalled without diagnostics.
 ## Current Goal
 
-- Log the completed starter template feature and continue with the next implementation unit.
+- Generated specs are privately stored in Blob and indexed by ProjectSpec. The Specs tab lists them, previews authenticated Markdown, downloads attachment responses, and starts generation from the saved canvas and room chat.
 
 ## Completed
 
+- Feature 26: Connected the sidebar prompt flow to the authenticated design API and realtime run subscription, posts AI outcomes to the shared chat feed, and shows active status from `ai-status-feed` only while the run is active. Verification commands stalled without diagnostics.
+- Feature 22: design-agent API flow — added `POST /api/ai/design`, persisted Trigger.dev `runId` records in Prisma, added the ownership-checked `POST /api/ai/design/token` route, and created the minimal `trigger/design-agent.ts` task.
+- Feature 25: Added validated room-scoped sidebar chat through the separate `ai-chat` Liveblocks feed, with sender/timestamp rendering and send failure feedback. `git diff --check` passes; `npm run build` stalled without diagnostics and was interrupted.
 - The project has a working dark workspace shell and editor chrome foundation.
 - Feature 04: editor home empty state, create/rename/delete project dialogs, live slug preview, and sidebar project actions for owned projects only.
 - Feature 05: Prisma schema definitions, cached client singleton, and the initial project migration.
@@ -23,14 +27,21 @@ Update this file whenever the current phase, active feature, or implementation s
 - Issue 1 fix: inline node label editing no longer renders a duplicate static label underneath the textarea; the editor now keeps a single crisp text layer while typing and remains synced through React Flow node state.
 - Sidebar project navigation fix: project names now link to their workspace from both the editor home and workspace sidebar.
 - Feature 19: predefined starter template library with canvas previews and collaborative canvas replacement.
+- Feature 20: canvas-only presence avatars with Clerk user filtering, live collaborator overflow stack, and Liveblocks-driven cursor tracking for other participants.
+- Feature 21: authenticated Vercel Blob canvas persistence, debounced autosave, empty-room restore, and editor save status indicator; TypeScript and diff checks passed.
+- Feature 22: private Vercel Blob access — private uploads persist the pathname, and authenticated project members stream canvas data through `/api/canvas/[projectId]`.
+- Feature 24: the AI sidebar now subscribes to the latest validated `ai-status-feed` message inside the room provider, reflects shared processing status, disables the prompt input and shows send-button loading state, and adds thinking spinners to live cursor badges. The existing design task publishes the generic feed payload.
+- Feature 28: added ProjectSpec metadata and migration, private Blob persistence in the spec task, and authenticated project-scoped list, preview-content, and Markdown attachment routes.
+- Feature 29: replaced the static Specs placeholder with the project spec list, Markdown preview dialog, download actions, and Generate Spec run flow.
+- Spec task runtime fix: regenerated Prisma Client with `npx prisma generate` so models in `prisma/models/` are included and the `projectSpec` delegate exists at runtime. OpenRouter is already used by both design and spec generation; no Google AI SDK references or dependency were found.
 
 ## In Progress
 
-- None.
+- None. Features 28 and 29 implementation is complete; `git diff --check` passes.
 
 ## Next Up
 
-- Continue with the next implementation unit after logging Feature 19.
+- Restart the Trigger.dev dev worker so it loads the regenerated client, then re-run TypeScript, focused ESLint, and production build when the environment allows them to complete; those commands stalled without diagnostics.
 
 ## Open Questions
 
@@ -49,12 +60,22 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
+- Feature 23 uses OpenRouter (`nvidia/nemotron-3.5-lightning:free`). Feature 24 aligns its status producer with the shared `ai-status-feed` and validated status payload contract.
+- Feature 23 uses OpenRouter (`nvidia/nemotron-3.5-lightning:free`) to generate validated design actions and applies node/edge operations through existing Liveblocks storage. The AI sidebar submits through the design API; the task publishes status in `ai-status-feed` and sets a cursor/thinking presence that clears when the task exits. Build and type checks remain unconfirmed in this environment because they stall without diagnostics.
+
+- Feature 22 sets the canvas upload to private, persists `blob.pathname` in the existing mapped Prisma column, and adds an authenticated stream route that resolves the pathname only from the accessible project record. The editor now loads through that route. `@vercel/blob` 2.8.1 already meets the 2.3 requirement. Prisma Client generation, `npx tsc --noEmit`, and `git diff --check` passed; no database migration or environment edits were needed.
+
+- Feature 21 adds `PUT`/`GET /api/projects/[projectId]/canvas`, reuses `canvasJsonPath`, stores snapshots in Vercel Blob, debounces collaborative node/edge saves, and restores state only into an empty connected Liveblocks room. Project membership is checked for reads and writes. `npx tsc --noEmit` and `git diff --check` passed; `npm run build` did not report completion after optimized compilation.
+
+- Feature 20 AI sidebar shell is implemented in src/components/editor/ai-sidebar.tsx: preserved parent-controlled visibility and the floating width transition, added the tabbed Architect/Specs UI, starter prompts, local demo chat messages, auto-resizing input, auto-scroll, and static spec card. Existing theme tokens are used; this feature adds no backend or Liveblocks behavior. `npm run build` and `npx tsc --noEmit` both stalled without diagnostics during compilation/checking and were interrupted; verification remains open.
+
 - Canvas selection fix: the full-node label overlay stopped `mousedown` and `click` propagation, preventing React Flow from selecting nodes on a single click. Removed those stops while retaining `nodrag`/`nopan` and double-click label editing. `npx tsc --noEmit` and `npm run build` pass; focused ESLint reports the existing `setState`-in-effect violation in `canvas-node.tsx`.
 - Feature 16 adds custom canvas edges with a right-angle smooth-step path, hover and selection emphasis, arrow markers, and a live inline label editor backed by `ReactFlow` edge state. The feature uses all four node sides with dual source/target handles, keeps default handles subtle until hover, and passes a production `npm run build` check.
 - Feature 15 adds a selected-node toolbar using the existing eight canvas color pairs. Swatch changes update both background and text colors through the collaborative node state. `npx tsc --noEmit` and `git diff --check` pass; the production build exits after optimized compilation starts without a completion summary.
 - Feature 14 adds minimum-bounded resize handles and centered inline label editing to the collaborative node renderer. Label edits use React Flow's provider-scoped node update API and remain synchronized through Liveblocks.
 - Feature 13 implementation is complete: six shape variants and a cursor-attached ghost preview are connected to the existing collaborative canvas and drag/drop flow.
 - Feature 19 adds three predefined architecture templates, a lightweight scaled SVG preview grid, and a navbar import action that removes current collaborative nodes/edges before loading the selected template and fitting the view. `npm run build`, `npx tsc --noEmit`, and `git diff --check` pass.
+- Feature 20 adds a canvas-only collaborator stack anchored in the top-right of the editor room, filters the current Clerk user out of Liveblocks presence, and broadcasts live cursor positions from React Flow mouse events while rendering other participants as colored cursor badges and avatars. `npm run build` passed.
 
 - Feature 10 adds typed `cursor`/`isThinking` presence, user name/avatar/color metadata, a cached Liveblocks node client, stable hash-based cursor color assignment, and `POST /api/liveblocks-auth` with project membership checks and private room creation.
 - Feature 11 adds the client room wrapper, synchronized React Flow nodes/edges, connection status feedback, and shared canvas types.
@@ -68,3 +89,6 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 06 was implemented backend-only and validated end to end: `401` on every unauthenticated request, `403` on non-owner mutations, cuid IDs, the `Untitled Project` default, and a clean `npm run build` that now includes all `src/app` routes.
 - Clerk auth route fix: sign-in/sign-up public matchers now include nested paths required for Clerk's catch-all checks. Both nested probes return HTTP 200, browser initialization has no Clerk errors, and ESLint passes for `src/proxy.ts`; signed-in logout still needs an authenticated test session.
 - Feature 08 adds Clerk identity and owner/collaborator access helpers, server-rendered access denial for missing or unauthorized projects, a project-aware workspace shell, active-project sidebar navigation, and project-ID workspace URLs. No canvas, AI chat, or sharing behavior was added. `npm run build` passes with `/editor/[roomId]` included.
+
+- Issue fix: Create `ai-chat` before room authorization, handle concurrent feed creation, and reserve the composer textarea bottom/right area so scrolled content remains visible around the send button. `git diff --check` passes.
+- Chat display fix: show the sender's prompt optimistically and deduplicate it against the persisted Liveblocks message using the same ID.

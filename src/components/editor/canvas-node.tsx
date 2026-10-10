@@ -155,8 +155,21 @@ export function CanvasNodeView({
   }, [data.label, id, label, updateNodeData]);
   const visibleLabel = isEditing ? "" : label;
 
+  const handleDoubleClickEdit = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (isEditing) return;
+      event.stopPropagation();
+      setIsEditing(true);
+    },
+    [isEditing],
+  );
+
   return (
-    <div className="group relative" style={{ width, height }}>
+    <div
+      className="group relative"
+      style={{ width, height }}
+      onDoubleClick={handleDoubleClickEdit}
+    >
       <NodeResizer
         isVisible={selected}
         minWidth={80}
@@ -288,21 +301,13 @@ export function CanvasNodeView({
           style={{ color: data.textColor ?? NODE_COLORS[0].text }}
         />
       ) : (
-        <button
-          type="button"
-          aria-label={label ? `Edit label: ${label}` : "Edit node label"}
-          onDoubleClick={(event) => {
-            event.stopPropagation();
-            setIsEditing(true);
-          }}
-          className="nodrag nopan absolute inset-0 z-10 flex items-center justify-center bg-transparent text-sm text-copy-muted"
-        >
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-transparent text-sm text-copy-muted">
           {!label ? (
             <span className="pointer-events-none">
               Double-click to add label
             </span>
           ) : null}
-        </button>
+        </div>
       )}
     </div>
   );

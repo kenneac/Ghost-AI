@@ -12,6 +12,7 @@ type EditorNavbarProps = {
   onToggleSidebar: () => void;
   title?: string;
   actions?: ReactNode;
+  showUserButton?: boolean;
 };
 
 export function EditorNavbar({
@@ -19,6 +20,7 @@ export function EditorNavbar({
   onToggleSidebar,
   title,
   actions,
+  showUserButton = false,
 }: EditorNavbarProps) {
   return (
     <header className="fixed inset-x-0 top-0 z-40 h-16 border-b border-surface-border bg-surface/95 backdrop-blur-sm">
@@ -44,7 +46,7 @@ export function EditorNavbar({
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2">
           {actions}
-          <UserButton />
+          {showUserButton ? <UserButton /> : null}
         </div>
       </div>
     </header>

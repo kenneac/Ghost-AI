@@ -30,7 +30,30 @@ interface ShareDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps) {
+async function readJsonResponse<T>(response: Response): Promise<T> {
+  const text = await response.text();
+
+  if (!text) {
+    throw new Error("The server returned an empty response.");
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    const snippet = text.replace(/\s+/g, " ").slice(0, 180);
+    throw new Error(
+      snippet
+        ? `The server returned an invalid response: ${snippet}`
+        : "The server returned an invalid response.",
+    );
+  }
+}
+
+export function ShareDialog({
+  projectId,
+  open,
+  onOpenChange,
+}: ShareDialogProps) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const [email, setEmail] = useState("");
@@ -44,14 +67,20 @@ export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps)
     setError(null);
     try {
       const response = await fetch(`/api/projects/${projectId}/collaborators`);
-      const result = (await response.json()) as CollaboratorsResponse | { error?: string };
+      const result = await readJsonResponse<
+        CollaboratorsResponse | { error?: string }
+      >(response);
       if (!response.ok || !("collaborators" in result)) {
-        throw new Error("error" in result ? result.error : "Could not load collaborators");
+        throw new Error(
+          "error" in result ? result.error : "Could not load collaborators",
+        );
       }
       setCollaborators(result.collaborators);
       setIsOwner(result.isOwner);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not load collaborators");
+      setError(
+        cause instanceof Error ? cause.message : "Could not load collaborators",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -77,12 +106,17 @@ export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(result.error ?? "Could not invite collaborator");
+      const result = await readJsonResponse<{ error?: string }>(response);
+      if (!response.ok)
+        throw new Error(result.error ?? "Could not invite collaborator");
       setEmail("");
       await loadCollaborators();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not invite collaborator");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Could not invite collaborator",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -96,11 +130,18 @@ export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: collaboratorEmail }),
       });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(result.error ?? "Could not remove collaborator");
-      setCollaborators((current) => current.filter((item) => item.email !== collaboratorEmail));
+      const result = await readJsonResponse<{ error?: string }>(response);
+      if (!response.ok)
+        throw new Error(result.error ?? "Could not remove collaborator");
+      setCollaborators((current) =>
+        current.filter((item) => item.email !== collaboratorEmail),
+      );
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not remove collaborator");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Could not remove collaborator",
+      );
     }
   }
 
@@ -122,13 +163,17 @@ export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps)
             Share project
           </DialogTitle>
           <DialogDescription className="text-copy-muted">
-            {isOwner ? "Invite people to collaborate on this system design." : "People with access to this project."}
+            {isOwner
+              ? "Invite people to collaborate on this system design."
+              : "People with access to this project."}
           </DialogDescription>
         </DialogHeader>
 
         {isOwner ? (
           <form onSubmit={inviteCollaborator} className="flex gap-2">
-            <label className="sr-only" htmlFor="collaborator-email">Collaborator email</label>
+            <label className="sr-only" htmlFor="collaborator-email">
+              Collaborator email
+            </label>
             <input
               id="collaborator-email"
               type="email"
@@ -139,7 +184,11 @@ export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps)
               className="h-10 min-w-0 flex-1 rounded-xl border border-surface-border bg-elevated px-3 text-sm outline-none placeholder:text-copy-muted focus:border-brand"
             />
             <Button type="submit" disabled={isSubmitting} className="gap-2">
-              {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              {isSubmitting ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="h-4 w-4" />
+              )}
               Invite
             </Button>
           </form>
@@ -150,23 +199,40 @@ export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps)
             Collaborators ({collaborators.length})
           </h3>
           {isLoading ? (
-            <div className="flex justify-center py-8"><LoaderCircle className="h-5 w-5 animate-spin text-copy-muted" /></div>
+            <div className="flex justify-center py-8">
+              <LoaderCircle className="h-5 w-5 animate-spin text-copy-muted" />
+            </div>
           ) : collaborators.length ? (
             <ul className="max-h-64 space-y-1 overflow-y-auto">
               {collaborators.map((collaborator) => (
-                <li key={collaborator.id} className="flex items-center gap-3 rounded-xl px-2 py-2">
+                <li
+                  key={collaborator.id}
+                  className="flex items-center gap-3 rounded-xl px-2 py-2"
+                >
                   {collaborator.imageUrl ? (
                     // Clerk-hosted profile image for the matched collaborator email.
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={collaborator.imageUrl} alt="" className="h-9 w-9 rounded-full object-cover" />
+                    <img
+                      src={collaborator.imageUrl}
+                      alt=""
+                      className="h-9 w-9 rounded-full object-cover"
+                    />
                   ) : (
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-subtle text-sm text-copy-muted">
-                      {(collaborator.name ?? collaborator.email).slice(0, 1).toUpperCase()}
+                      {(collaborator.name ?? collaborator.email)
+                        .slice(0, 1)
+                        .toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{collaborator.name ?? collaborator.email}</p>
-                    {collaborator.name ? <p className="truncate text-xs text-copy-muted">{collaborator.email}</p> : null}
+                    <p className="truncate text-sm font-medium">
+                      {collaborator.name ?? collaborator.email}
+                    </p>
+                    {collaborator.name ? (
+                      <p className="truncate text-xs text-copy-muted">
+                        {collaborator.email}
+                      </p>
+                    ) : null}
                   </div>
                   {isOwner ? (
                     <Button
@@ -174,24 +240,46 @@ export function ShareDialog({ projectId, open, onOpenChange }: ShareDialogProps)
                       variant="ghost"
                       size="icon"
                       aria-label={`Remove ${collaborator.email}`}
-                      onClick={() => void removeCollaborator(collaborator.email)}
+                      onClick={() =>
+                        void removeCollaborator(collaborator.email)
+                      }
                       className="shrink-0 text-copy-muted hover:text-state-error"
-                    ><Trash2 className="h-4 w-4" /></Button>
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   ) : null}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="py-5 text-center text-sm text-copy-muted">No collaborators yet.</p>
+            <p className="py-5 text-center text-sm text-copy-muted">
+              No collaborators yet.
+            </p>
           )}
         </div>
 
-        {error ? <p role="alert" className="text-sm text-state-error">{error}</p> : null}
+        {error ? (
+          <p role="alert" className="text-sm text-state-error">
+            {error}
+          </p>
+        ) : null}
 
         <div className="flex items-center justify-between gap-3 border-t border-surface-border pt-4">
-          <p className="text-xs text-copy-muted">Anyone with the project link still needs access.</p>
-          <Button type="button" variant="outline" size="sm" onClick={() => void copyProjectLink()} className="shrink-0 gap-2">
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          <p className="text-xs text-copy-muted">
+            Anyone with the project link still needs access.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void copyProjectLink()}
+            className="shrink-0 gap-2"
+          >
+            {copied ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
             {copied ? "Copied!" : "Copy link"}
           </Button>
         </div>

@@ -119,6 +119,7 @@ export function EditorHome({ ownedProjects, sharedProjects }: EditorHomeProps) {
       <EditorNavbar
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((current) => !current)}
+        showUserButton
       />
 
       <ProjectSidebar

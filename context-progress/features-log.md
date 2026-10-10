@@ -514,3 +514,377 @@ None.
 - `git diff --check` passed.
 
 ---
+
+### Feature 20: Presence avatars and live cursors
+
+**Date:** 2026-10-09
+
+**Description:** Added a canvas-only presence stack in the editor room, filtered the current Clerk user from the collaborator list, and broadcasted live cursor positions from React Flow mouse events so other participants appear as colored avatars and cursor badges without changing the shared editor navbar.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `liveblocks.config.ts`
+  - Changes the shared Liveblocks presence type to `cursor` plus `thinking`, matching the room contract used by the canvas overlay.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Updates the room’s initial presence payload to the new `thinking` property so the canvas and room start from the same typed state.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Adds the top-right collaborator stack, excludes the signed-in Clerk user from the overlay, shows a five-avatar overflow state with initials fallback, and renders live colored cursors for other participants using Liveblocks presence and React Flow mouse events.
+- `context-progress/progress-tracker.md`
+  - Marks the feature as implemented and records the final build verification.
+
+#### Verification
+
+- `npm run build` passed.
+
+---
+
+### Feature 20: AI sidebar shell
+
+**Date:** 2026-10-09
+
+**Description:** Completed the floating AI workspace sidebar UI with parent-controlled visibility, the existing right-side width transition, Architect and Specs tabs, a local demo chat flow, and a static spec card. The feature remains UI-only and adds no backend or Liveblocks behavior.
+
+#### New Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Provides the AI Workspace header, close control, tabbed layout, empty state, three starter prompt chips, user and assistant message bubbles, auto-resizing textarea, Enter/Shift+Enter submission behavior, and auto-scrolling chat area.
+  - Adds the Specs tab with Generate Spec control, demo spec summary card, and disabled download action.
+  - Uses existing project color tokens and keeps open state controlled by the editor workspace parent.
+
+#### Updated Files
+
+- `context-progress/progress-tracker.md`
+  - Records Feature 20 implementation and the verification status.
+- `context-progress/features-log.md`
+  - Logs this feature implementation.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run build` stalled at optimized production compilation without diagnostics and was interrupted.
+- `npx tsc --noEmit` stalled without diagnostics and was interrupted.
+
+---
+
+### Feature 22: Private canvas Blob access
+
+**Date:** 2026-10-09
+
+**Description:** Updated canvas persistence for the private Vercel Blob store. Uploads use private access and save the pathname in the project record; authorized canvas loads stream through an authenticated application route.
+
+#### New Files
+
+- `src/app/api/canvas/[projectId]/route.ts`
+  - Checks Clerk identity and project membership, reads the Blob pathname from Prisma, and streams private canvas JSON with `private, no-store` caching.
+
+#### Updated Files
+
+- `src/app/api/projects/[projectId]/canvas/route.ts`
+  - Uploads canvas snapshots with private access and stores the returned pathname instead of a URL.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Loads saved canvas JSON from the authenticated canvas streaming route.
+- `prisma/models/project.prisma`
+  - Renames the model property to `canvasBlobPath` while retaining the existing database column mapping.
+- `context/architecture-context.md`
+  - Documents pathname references and authenticated private Blob reads.
+- `context/code-standards.md`
+  - Requires authenticated routes for serving private Blob content.
+- `context/feature-specs/05-prisma.md`
+  - Updates the canvas storage field name.
+- `context/feature-specs/21-canvas-autosave.md`
+  - Specifies private Blob pathname storage and authenticated reads.
+- `context-progress/progress-tracker.md`
+  - Records Feature 22 implementation and verification.
+
+#### Verification
+
+- `@vercel/blob` 2.8.1 already meets the required minimum version.
+- `npx prisma generate --schema prisma` passed.
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+
+---
+
+### Feature 21: Canvas autosave
+
+**Date:** 2026-10-09
+
+**Description:** Added authenticated canvas snapshot persistence through Vercel Blob, debounced saves from the collaborative Liveblocks canvas, restore only when a connected room has no nodes or edges, and a compact save status indicator in the editor navbar.
+
+#### New Files
+
+- `src/app/api/projects/[projectId]/canvas/route.ts`
+  - Adds membership-checked `GET` and `PUT` endpoints to retrieve snapshots and upload canvas JSON to Vercel Blob while saving its URL in the existing Prisma field.
+- `src/hooks/use-canvas-autosave.ts`
+  - Debounces node and edge saves and reports saving, saved, and error states.
+
+#### Updated Files
+
+- `src/components/editor/collaborative-canvas.tsx`
+  - Restores saved state only after connection and only if the shared room remains empty; enables autosave after the restore check.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Passes save status updates from the shared canvas to its editor parent.
+- `src/components/editor/editor-workspace.tsx`
+  - Displays the canvas save status in the workspace navbar.
+- `context-progress/progress-tracker.md`
+  - Records Feature 21 implementation and verification status.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` reached optimized production compilation but returned without a completion summary.
+
+---
+
+### Feature 22: Design agent API backend flow
+
+**Date:** 2026-10-09
+
+**Description:** Added the Trigger.dev design-generation backend flow without AI logic. The app now accepts a design prompt and project context, stores each Trigger.dev run in Prisma, and issues a run-scoped public token only after verifying ownership.
+
+#### New Files
+
+- `src/app/api/ai/design/route.ts`
+  - Accepts `prompt`, `roomId`, and `projectId`, validates the project membership, triggers the design task, and records the Trigger.dev run ID in Prisma.
+- `src/app/api/ai/design/token/route.ts`
+  - Verifies the run record belongs to the authenticated user and returns a run-scoped `@trigger.dev/sdk` public token.
+- `trigger/design-agent.ts`
+  - Exports a minimal `designAgent` task that echoes the incoming payload and logs the request for now.
+
+#### Updated Files
+
+- `prisma/models/project.prisma`
+  - Adds the `TaskRun` model with a unique `runId`, `projectId`, `userId`, and the requested indexes.
+- `context-progress/progress-tracker.md`
+  - Marks the feature as implemented and records the backend task wiring and verification status.
+- `context/progress-tracker.md`
+  - Keeps the project tracker aligned with the design-agent API implementation.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` remained stuck during the optimized Next.js production build in this environment without returning diagnostics, so the full build result remains unconfirmed here.
+
+---
+
+### Feature 23: OpenRouter design agent logic
+
+**Date:** 2026-10-10
+
+**Description:** Implemented prompt-driven system design generation with OpenRouter's `nvidia/nemotron-3.5-lightning:free` model and real-time graph mutations in the existing Liveblocks room. Added shared AI status updates and presence, and connected the Architect sidebar to the design task API.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `trigger/design-agent.ts`
+  - Uses OpenRouter structured output to produce validated node and edge actions and applies them to the existing React Flow Liveblocks storage maps.
+  - Publishes shared status feed messages and expiring AI cursor/thinking presence, then clears presence when the task exits.
+- `liveblocks.config.ts`
+  - Types shared AI status events and the Liveblocks storage contract.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Initializes the same `flow` maps consumed by `useLiveblocksFlow` for new rooms.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Displays AI thinking state with shared collaborator cursors.
+- `src/components/editor/editor-workspace.tsx`
+  - Passes project and room identifiers to the Architect sidebar.
+- `src/components/editor/ai-sidebar.tsx`
+  - Submits prompts to the authenticated design API and reports task start/errors in the chat.
+- `context-progress/progress-tracker.md`
+  - Records implementation state and outstanding verification blockers.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npx tsc --noEmit` reports existing errors because the generated Prisma client lacks the `TaskRun` model; Prisma generation stalled without output.
+- `npm run build` was blocked by another Next.js build process holding the build lock.
+
+---
+
+### Feature 24: AI presence state
+
+**Date:** 2026-10-10
+
+**Description:** Added shared AI activity state to the existing Liveblocks room. The sidebar shows the latest validated status from `ai-status-feed`, disables prompt entry and shows a loading indicator while generation is active, and live cursor badges show a spinner when participant presence has `thinking: true`.
+
+#### New Files
+
+- `src/types/tasks.ts`
+  - Defines the Zod schema and inferred type for generic AI status feed messages, including optional `text` and task type fields.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Subscribes to the latest room feed message, validates it before display, and uses shared processing status to control the prompt and send button.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Places the sidebar under the existing `RoomProvider` so it can subscribe to feed messages.
+- `src/components/editor/editor-workspace.tsx`
+  - Renders the sidebar through the room wrapper while preserving the workspace layout.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Adds a spinner to cursor name badges for collaborators with `thinking: true` presence.
+- `trigger/design-agent.ts`
+  - Publishes design task status using the generic message schema and the canonical `ai-status-feed`.
+- `liveblocks.config.ts`
+  - Removes the unused status room event type; the feed is the shared status channel.
+- `context-progress/progress-tracker.md` and `context/progress-tracker.md`
+  - Record Feature 24 completion and verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run build`, `npx tsc --noEmit`, and focused ESLint commands stalled without diagnostics and were stopped; these checks remain unconfirmed in this environment.
+
+### Feature 25: Sidebar chat feed
+
+**Date:** 2026-10-10
+
+**Description:** Added collaborative room chat to the AI sidebar using a dedicated Liveblocks `ai-chat` feed, separate from AI status updates. Messages are validated before display and include sender and timestamp details; send failures show an inline error.
+
+#### New Files
+
+- `src/types/tasks.ts`
+  - Defines Zod schemas and inferred types for AI status and chat feed payloads.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Subscribes to the room-scoped chat feed, validates and orders messages, and sends chat messages without triggering AI tasks.
+  - Displays sender and timestamp and reports feed send errors.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 25 complete and records verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run build` stalled without diagnostics and was interrupted.
+
+---
+
+### Feature 26: Design agent frontend
+
+**Date:** 2026-10-10
+
+**Description:** Connected the AI sidebar to the authenticated design run API and Trigger.dev realtime subscription. User prompts and AI outcomes are shared through `ai-chat`, run status is shown while active, and generated canvas changes continue to arrive through Liveblocks.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Posts prompts to `ai-chat`, starts a design run, retrieves its scoped realtime token, and subscribes with `useRealtimeRun`.
+  - Shows active run status and posts completion, task failure, or subscription errors to the shared chat feed.
+  - Uses existing green success theme tokens for user bubbles and the submit control.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 26 complete and records verification status.
+- `context/progress-tracker.md`
+  - Records Feature 26 completion and verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npx tsc --noEmit`, `npm run build`, and focused ESLint stalled without diagnostics and were interrupted.
+
+---
+
+### Feature 27: Spec generation flow
+
+**Date:** 2026-10-10
+
+**Description:** Added the authenticated spec generation API flow with project access derived from the existing room ID contract, Prisma run ownership tracking, and run-scoped one-hour public token issuance. Updated the Trigger.dev task to generate Markdown through OpenRouter and publish realtime status with metadata and structured logs.
+
+#### New Files
+
+- `src/app/api/ai/spec/route.ts`
+  - Validates spec input, resolves project membership from `roomId`, starts `generate-spec`, and records the run owner in Prisma.
+- `src/app/api/ai/spec/token/route.ts`
+  - Validates the run ID, enforces run ownership, and issues a run-scoped token expiring in one hour.
+- `trigger/generate-spec.ts`
+  - Validates task input, creates a Markdown specification through OpenRouter, tracks status in Trigger metadata and the Liveblocks feed, and returns plain Markdown.
+
+#### Updated Files
+
+- `context-progress/progress-tracker.md`
+  - Records Feature 27 implementation and verification status.
+- `context-progress/features-log.md`
+  - Adds this Feature 27 record.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npx tsc --noEmit` and focused ESLint stalled without diagnostics; verification remains unconfirmed.
+
+This feature was re-read and rechecked on 2026-10-10; no implementation changes were needed.
+
+---
+
+### Feature 28: Spec persistence and secure retrieval
+
+**Date:** 2026-10-10
+
+**Description:** Added ProjectSpec metadata linked to each project and private Vercel Blob persistence for generated Markdown. Added authenticated project-scoped routes to list spec metadata, read preview content, and download Markdown attachments.
+
+#### New Files
+
+- `prisma/migrations/20261010100000_add_project_specs/migration.sql`
+  - Creates the project_specs table, project relation, and project/date index.
+- `src/app/api/projects/[projectId]/specs/route.ts`
+  - Lists the accessible project's spec IDs, filenames, and creation dates.
+- `src/app/api/projects/[projectId]/specs/[specId]/route.ts`
+  - Streams private Markdown content to authorized project members for preview.
+- `src/app/api/projects/[projectId]/specs/[specId]/download/route.ts`
+  - Streams the authorized spec as a Markdown attachment.
+
+#### Updated Files
+
+- `prisma/models/project.prisma`
+  - Adds ProjectSpec metadata and its cascading project relation.
+- `trigger/generate-spec.ts`
+  - Stores generated Markdown in a private Blob and records its pathname in ProjectSpec.
+- `context-progress/progress-tracker.md`
+  - Records Features 28 and 29 implementation and verification state.
+- `context-progress/features-log.md`
+  - Adds the Feature 28 and Feature 29 implementation records.
+
+#### Verification
+
+- `git diff --check` passed.
+- Prisma client generation, TypeScript, focused ESLint, and production build stalled without diagnostics; verification remains unconfirmed.
+
+---
+
+### Feature 29: Spec sidebar integration
+
+**Date:** 2026-10-10
+
+**Description:** Connected the Specs tab to saved specs with a compact project list, an accessible Markdown preview dialog, and downloads through the authenticated endpoint. The Generate Spec control starts a task using the saved canvas and current room chat, then refreshes the list after completion.
+
+#### New Files
+
+- `src/components/editor/spec-markdown.tsx`
+  - Renders common Markdown blocks and inline formatting as safe React elements.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Loads project spec metadata, fetches preview content on demand, provides download actions, and starts spec generation with realtime completion handling.
+- `context-progress/progress-tracker.md`
+  - Records Features 28 and 29 implementation and verification state.
+- `context-progress/features-log.md`
+  - Adds the Feature 28 and Feature 29 implementation records.
+
+#### Verification
+
+- `git diff --check` passed.
+- Prisma client generation, TypeScript, focused ESLint, and production build stalled without diagnostics; verification remains unconfirmed.
+
+---
