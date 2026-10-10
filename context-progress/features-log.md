@@ -638,3 +638,35 @@ None.
 - `npx tsc --noEmit` passed.
 - `git diff --check` passed.
 - `npm run build` reached optimized production compilation but returned without a completion summary.
+
+---
+
+### Feature 22: Design agent API backend flow
+
+**Date:** 2026-10-09
+
+**Description:** Added the Trigger.dev design-generation backend flow without AI logic. The app now accepts a design prompt and project context, stores each Trigger.dev run in Prisma, and issues a run-scoped public token only after verifying ownership.
+
+#### New Files
+
+- `src/app/api/ai/design/route.ts`
+  - Accepts `prompt`, `roomId`, and `projectId`, validates the project membership, triggers the design task, and records the Trigger.dev run ID in Prisma.
+- `src/app/api/ai/design/token/route.ts`
+  - Verifies the run record belongs to the authenticated user and returns a run-scoped `@trigger.dev/sdk` public token.
+- `trigger/design-agent.ts`
+  - Exports a minimal `designAgent` task that echoes the incoming payload and logs the request for now.
+
+#### Updated Files
+
+- `prisma/models/project.prisma`
+  - Adds the `TaskRun` model with a unique `runId`, `projectId`, `userId`, and the requested indexes.
+- `context-progress/progress-tracker.md`
+  - Marks the feature as implemented and records the backend task wiring and verification status.
+- `context/progress-tracker.md`
+  - Keeps the project tracker aligned with the design-agent API implementation.
+
+#### Verification
+
+- `npx tsc --noEmit` passed.
+- `git diff --check` passed.
+- `npm run build` remained stuck during the optimized Next.js production build in this environment without returning diagnostics, so the full build result remains unconfirmed here.

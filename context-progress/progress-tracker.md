@@ -4,14 +4,15 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 22: private canvas Blob access — implemented; Prisma Client generation and TypeScript verification passed
+- Feature 22: design-agent API flow — implemented; task-triggering API, Prisma task-run tracking, and run-scoped token issuance are now in place.
 
 ## Current Goal
 
-- Implemented Feature 22; no database migration or environment changes were required.
+- The design generation backend flow defined in `context/feature-specs/22-design-agent-api.md` is implemented without AI logic; the remaining verification note is the full Next build status in this environment.
 
 ## Completed
 
+- Feature 22: design-agent API flow — added `POST /api/ai/design`, persisted Trigger.dev `runId` records in Prisma, added the ownership-checked `POST /api/ai/design/token` route, and created the minimal `trigger/design-agent.ts` task.
 - The project has a working dark workspace shell and editor chrome foundation.
 - Feature 04: editor home empty state, create/rename/delete project dialogs, live slug preview, and sidebar project actions for owned projects only.
 - Feature 05: Prisma schema definitions, cached client singleton, and the initial project migration.
@@ -31,10 +32,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 - None.
 
-
 ## Next Up
-
-
 
 ## Open Questions
 
@@ -58,7 +56,6 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 21 adds `PUT`/`GET /api/projects/[projectId]/canvas`, reuses `canvasJsonPath`, stores snapshots in Vercel Blob, debounces collaborative node/edge saves, and restores state only into an empty connected Liveblocks room. Project membership is checked for reads and writes. `npx tsc --noEmit` and `git diff --check` passed; `npm run build` did not report completion after optimized compilation.
 
 - Feature 20 AI sidebar shell is implemented in src/components/editor/ai-sidebar.tsx: preserved parent-controlled visibility and the floating width transition, added the tabbed Architect/Specs UI, starter prompts, local demo chat messages, auto-resizing input, auto-scroll, and static spec card. Existing theme tokens are used; this feature adds no backend or Liveblocks behavior. `npm run build` and `npx tsc --noEmit` both stalled without diagnostics during compilation/checking and were interrupted; verification remains open.
-
 
 - Canvas selection fix: the full-node label overlay stopped `mousedown` and `click` propagation, preventing React Flow from selecting nodes on a single click. Removed those stops while retaining `nodrag`/`nopan` and double-click label editing. `npx tsc --noEmit` and `npm run build` pass; focused ESLint reports the existing `setState`-in-effect violation in `canvas-node.tsx`.
 - Feature 16 adds custom canvas edges with a right-angle smooth-step path, hover and selection emphasis, arrow markers, and a live inline label editor backed by `ReactFlow` edge state. The feature uses all four node sides with dual source/target handles, keeps default handles subtle until hover, and passes a production `npm run build` check.
