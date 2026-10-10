@@ -2,6 +2,7 @@
 
 import { LiveblocksProvider, RoomProvider } from "@liveblocks/react/suspense";
 import { LiveMap, LiveObject, type Lson } from "@liveblocks/client";
+import type { ReactNode } from "react";
 
 import { CollaborativeCanvas } from "@/components/editor/collaborative-canvas";
 import type { CanvasTemplate } from "@/components/editor/starter-templates";
@@ -10,10 +11,12 @@ export function LiveblocksCanvasRoom({
   roomId,
   onSaveStatusChange,
   onRegisterImport,
+  children,
 }: {
   roomId: string;
   onSaveStatusChange: (status: "saving" | "saved" | "error") => void;
   onRegisterImport: (handler: (template: CanvasTemplate) => void) => void;
+  children: ReactNode;
 }) {
   return (
     <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
@@ -27,11 +30,19 @@ export function LiveblocksCanvasRoom({
           }),
         })}
       >
-        <CollaborativeCanvas
-          roomId={roomId}
-          onSaveStatusChange={onSaveStatusChange}
-          onRegisterImport={onRegisterImport}
-        />
+        <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+          <section
+            aria-label="Canvas workspace"
+            className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden bg-base"
+          >
+            <CollaborativeCanvas
+              roomId={roomId}
+              onSaveStatusChange={onSaveStatusChange}
+              onRegisterImport={onRegisterImport}
+            />
+          </section>
+          {children}
+        </div>
       </RoomProvider>
     </LiveblocksProvider>
   );

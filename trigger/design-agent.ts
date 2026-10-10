@@ -6,6 +6,7 @@ import { task } from "@trigger.dev/sdk";
 import { z } from "zod";
 
 import { NODE_COLORS, NODE_SHAPES } from "../src/types/canvas";
+import { aiStatusMessageSchema } from "../src/types/tasks";
 
 export type DesignAgentPayload = {
   prompt: string;
@@ -69,8 +70,7 @@ const AI_USER_INFO = {
   name: "Ghost AI",
   color: "#8b82ff",
 };
-const FEED_ID = "ai-activity";
-const STATUS_EVENT = "ai-status";
+const FEED_ID = "ai-status-feed";
 const DESIGN_MODEL = "nvidia/nemotron-3.5-lightning:free";
 
 function getOpenRouterClient() {
@@ -92,12 +92,7 @@ async function publishStatus(
   message: string,
 ) {
   const timestamp = new Date().toISOString();
-  await client.broadcastEvent(roomId, {
-    type: STATUS_EVENT,
-    status,
-    message,
-    timestamp,
-  });
+  const data = aiStatusMessageSchema.parse({ status, taskType: "design", text: message });
 
   try {
     await client.getFeed({ roomId, feedId: FEED_ID });
@@ -109,12 +104,8 @@ async function publishStatus(
     await client.createFeedMessage({
       roomId,
       feedId: FEED_ID,
-      data: {
-        type: STATUS_EVENT,
-        status,
-        message,
-        timestamp,
-      },
+      data,
+      createdAt: Date.parse(timestamp),
     });
   } catch (error) {
     console.warn("Could not append AI status to the Liveblocks feed", error);

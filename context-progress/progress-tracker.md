@@ -4,15 +4,18 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 23: design-agent logic — implementation complete; verification is blocked by stale generated Prisma types and an orphaned Next.js build lock.
+- Feature 26: design agent frontend — implementation complete; build, TypeScript, and focused ESLint checks stalled without diagnostics.
 
+- Feature 25: sidebar chat feed — implementation complete; `npm run build` stalled without diagnostics.
 ## Current Goal
 
-- Feature 23 is implemented with Gemini, the existing Liveblocks React Flow storage, shared AI status events/feed, and AI presence. Refresh the Prisma client and clear the stale build lock before final verification.
+- Feature 26 also ensures `ai-chat` exists during authenticated room setup, preventing feed writes from failing on new rooms; the composer send control overlays the lower-right corner with reserved scroll padding.
 
 ## Completed
 
+- Feature 26: Connected the sidebar prompt flow to the authenticated design API and realtime run subscription, posts AI outcomes to the shared chat feed, and shows active status from `ai-status-feed` only while the run is active. Verification commands stalled without diagnostics.
 - Feature 22: design-agent API flow — added `POST /api/ai/design`, persisted Trigger.dev `runId` records in Prisma, added the ownership-checked `POST /api/ai/design/token` route, and created the minimal `trigger/design-agent.ts` task.
+- Feature 25: Added validated room-scoped sidebar chat through the separate `ai-chat` Liveblocks feed, with sender/timestamp rendering and send failure feedback. `git diff --check` passes; `npm run build` stalled without diagnostics and was interrupted.
 - The project has a working dark workspace shell and editor chrome foundation.
 - Feature 04: editor home empty state, create/rename/delete project dialogs, live slug preview, and sidebar project actions for owned projects only.
 - Feature 05: Prisma schema definitions, cached client singleton, and the initial project migration.
@@ -27,6 +30,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 20: canvas-only presence avatars with Clerk user filtering, live collaborator overflow stack, and Liveblocks-driven cursor tracking for other participants.
 - Feature 21: authenticated Vercel Blob canvas persistence, debounced autosave, empty-room restore, and editor save status indicator; TypeScript and diff checks passed.
 - Feature 22: private Vercel Blob access — private uploads persist the pathname, and authenticated project members stream canvas data through `/api/canvas/[projectId]`.
+- Feature 24: the AI sidebar now subscribes to the latest validated `ai-status-feed` message inside the room provider, reflects shared processing status, disables the prompt input and shows send-button loading state, and adds thinking spinners to live cursor badges. The existing design task publishes the generic feed payload.
 
 ## In Progress
 
@@ -34,7 +38,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Re-run Prisma client generation and `npm run build` after the stale process/lock clears; current TypeScript errors are limited to the existing `TaskRun` Prisma delegates.
+- Re-run `npm run build`, `npx tsc --noEmit`, and focused ESLint when the environment allows child processes to complete; prior attempts stalled without diagnostics. The known stale generated Prisma `TaskRun` delegate issue remains an existing verification concern.
 
 ## Open Questions
 
@@ -53,7 +57,8 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
-- Feature 23 adds validated Gemini design actions to the Trigger.dev task, applies add/move/resize/update/delete node and edge operations through the existing `flow` Liveblocks storage maps, publishes status room events and feed messages, and sets an AI cursor/thinking presence that clears on completion. The AI sidebar submits to the existing design API, and the canvas cursor label displays AI thinking status. `npx tsc --noEmit` reports only the existing generated Prisma client missing the `TaskRun` model; Prisma CLI generation hangs in this environment. `npm run build` could not start because another Next build process owns the lock.
+- Feature 23 uses OpenRouter (`nvidia/nemotron-3.5-lightning:free`). Feature 24 aligns its status producer with the shared `ai-status-feed` and validated status payload contract.
+- Feature 23 uses OpenRouter (`nvidia/nemotron-3.5-lightning:free`) to generate validated design actions and applies node/edge operations through existing Liveblocks storage. The AI sidebar submits through the design API; the task publishes status in `ai-status-feed` and sets a cursor/thinking presence that clears when the task exits. Build and type checks remain unconfirmed in this environment because they stall without diagnostics.
 
 - Feature 22 sets the canvas upload to private, persists `blob.pathname` in the existing mapped Prisma column, and adds an authenticated stream route that resolves the pathname only from the accessible project record. The editor now loads through that route. `@vercel/blob` 2.8.1 already meets the 2.3 requirement. Prisma Client generation, `npx tsc --noEmit`, and `git diff --check` passed; no database migration or environment edits were needed.
 
@@ -81,3 +86,6 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 06 was implemented backend-only and validated end to end: `401` on every unauthenticated request, `403` on non-owner mutations, cuid IDs, the `Untitled Project` default, and a clean `npm run build` that now includes all `src/app` routes.
 - Clerk auth route fix: sign-in/sign-up public matchers now include nested paths required for Clerk's catch-all checks. Both nested probes return HTTP 200, browser initialization has no Clerk errors, and ESLint passes for `src/proxy.ts`; signed-in logout still needs an authenticated test session.
 - Feature 08 adds Clerk identity and owner/collaborator access helpers, server-rendered access denial for missing or unauthorized projects, a project-aware workspace shell, active-project sidebar navigation, and project-ID workspace URLs. No canvas, AI chat, or sharing behavior was added. `npm run build` passes with `/editor/[roomId]` included.
+
+- Issue fix: Create `ai-chat` before room authorization, handle concurrent feed creation, and reserve the composer textarea bottom/right area so scrolled content remains visible around the send button. `git diff --check` passes.
+- Chat display fix: show the sender's prompt optimistically and deduplicate it against the persisted Liveblocks message using the same ID.

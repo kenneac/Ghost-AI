@@ -22,7 +22,7 @@ import {
   useNodes,
   useReactFlow,
 } from "@xyflow/react";
-import { Minus, Plus, RotateCcw, RotateCw, ScanLine } from "lucide-react";
+import { LoaderCircle, Minus, Plus, RotateCcw, RotateCw, ScanLine } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { UserButton } from "@clerk/nextjs";
 import "@xyflow/react/dist/style.css";
@@ -330,10 +330,13 @@ function CanvasLiveCursors() {
                 />
               </svg>
               <span
-                className="rounded-full border border-surface-border px-2 py-1 text-[10px] font-medium text-copy-primary shadow-sm"
+                className="flex items-center gap-1.5 rounded-full border border-surface-border px-2 py-1 text-[10px] font-medium text-copy-primary shadow-sm"
                 style={{ backgroundColor: color, color: "#080809" }}
               >
-                {isThinking ? `${name} · thinking` : name}
+                {isThinking ? (
+                  <LoaderCircle className="h-3 w-3 animate-spin" aria-label="Thinking" />
+                ) : null}
+                <span>{name}</span>
               </span>
             </div>
           </div>

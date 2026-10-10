@@ -19,12 +19,6 @@ declare global {
     };
 
     ThreadMetadata: {};
-    RoomEvent: {
-      type: "ai-status";
-      status: "processing" | "complete" | "error";
-      message: string;
-      timestamp: string;
-    };
     RoomInfo: {};
   }
 }

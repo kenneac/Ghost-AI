@@ -1,18 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { ArrowUp, Bot, Download, FileText, Sparkles, X } from "lucide-react";
+import { useCreateFeedMessage, useFeedMessages, useSelf } from "@liveblocks/react";
+import { useRealtimeRun } from "@trigger.dev/react-hooks";
+import { ArrowUp, Bot, Download, FileText, LoaderCircle, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import {
+  aiChatMessageSchema,
+  aiStatusMessageSchema,
+  type AiChatMessage,
+  type AiStatusMessage,
+} from "@/types/tasks";
 
 type AiTabValue = "architect" | "specs";
-type ChatMessage = {
+type ChatMessage = AiChatMessage & {
   id: string;
-  role: "user" | "assistant";
-  content: string;
 };
 
 const starterPrompts = [
@@ -20,6 +26,9 @@ const starterPrompts = [
   "Create a chat app architecture",
   "Build a CI/CD pipeline",
 ];
+
+const AI_STATUS_FEED_ID = "ai-status-feed";
+const AI_CHAT_FEED_ID = "ai-chat";
 
 export function AiSidebar({
   isOpen,
@@ -34,10 +43,43 @@ export function AiSidebar({
 }) {
   const [activeTab, setActiveTab] = useState<AiTabValue>("architect");
   const [draft, setDraft] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [optimisticMessages, setOptimisticMessages] = useState<ChatMessage[]>([]);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [runId, setRunId] = useState<string>();
+  const [publicToken, setPublicToken] = useState<string>();
+  const [isStartingRun, setIsStartingRun] = useState(false);
+  const createFeedMessage = useCreateFeedMessage();
+  const self = useSelf();
+  const { run, error: realtimeError } = useRealtimeRun(runId, {
+    accessToken: publicToken,
+    enabled: Boolean(runId && publicToken),
+  });
+  const { messages: feedMessages } = useFeedMessages(AI_STATUS_FEED_ID, { limit: 20 });
+  const { messages: chatFeedMessages } = useFeedMessages(AI_CHAT_FEED_ID, { limit: 100 });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const chatAreaRef = useRef<HTMLDivElement | null>(null);
+  const completedRunRef = useRef<string | null>(null);
+  const latestStatus = feedMessages
+    ?.slice()
+    .sort((left, right) => left.createdAt - right.createdAt)
+    .reduce<AiStatusMessage | undefined>((latest, feedMessage) => {
+      const parsed = aiStatusMessageSchema.safeParse(feedMessage.data);
+      return parsed.success ? parsed.data : latest;
+    }, undefined);
+  const terminalStatuses = ["COMPLETED", "FAILED", "CANCELED", "CRASHED", "EXPIRED", "TIMED_OUT", "SYSTEM_FAILURE"];
+  const isRunActive = Boolean(runId && (!run || !terminalStatuses.includes(run.status)));
+  const isBusy = isStartingRun || isRunActive;
+  const persistedMessages = (chatFeedMessages ?? [])
+    .map((feedMessage) => {
+      const parsed = aiChatMessageSchema.safeParse(feedMessage.data);
+      return parsed.success
+        ? { ...parsed.data, id: feedMessage.id }
+        : null;
+    })
+    .filter((message): message is ChatMessage => message !== null)
+  const persistedMessageIds = new Set(persistedMessages.map((message) => message.id));
+  const messages = [...persistedMessages, ...optimisticMessages.filter((message) => !persistedMessageIds.has(message.id))]
+    .sort((left, right) => left.timestamp - right.timestamp || left.id.localeCompare(right.id));
 
   useEffect(() => {
     if (!textareaRef.current) {
@@ -58,52 +100,112 @@ export function AiSidebar({
     });
   }, [messages]);
 
+  useEffect(() => {
+    if (realtimeError && runId && completedRunRef.current !== runId) {
+      completedRunRef.current = runId;
+      void createFeedMessage(AI_CHAT_FEED_ID, {
+        sender: "Ghost AI",
+        role: "assistant",
+        content: "Ghost AI could not track this design run. Please try again.",
+        timestamp: Date.now(),
+      }).catch(() => undefined);
+      setRunId(undefined);
+      setPublicToken(undefined);
+    }
+  }, [createFeedMessage, realtimeError, runId]);
+
+  useEffect(() => {
+    if (!run || !runId || isRunActive || completedRunRef.current === runId) return;
+    completedRunRef.current = runId;
+    const output = run.output;
+    const taskFailed = Boolean(
+      output && typeof output === "object" && "ok" in output && output.ok === false,
+    );
+    const outputError =
+      output && typeof output === "object" && "error" in output && typeof output.error === "string"
+        ? output.error
+        : undefined;
+    void createFeedMessage(AI_CHAT_FEED_ID, {
+      sender: "Ghost AI",
+      role: "assistant",
+      content: run.status === "COMPLETED" && !taskFailed
+        ? "Design complete. The shared canvas has been updated."
+        : outputError ?? `Design run ${run.status.toLowerCase().replaceAll("_", " ")}. Please try again.`,
+      timestamp: Date.now(),
+    }).catch(() => undefined);
+    setRunId(undefined);
+    setPublicToken(undefined);
+  }, [createFeedMessage, isRunActive, run, runId]);
+
   const handleSubmit = async () => {
     const trimmed = draft.trim();
 
-    if (!trimmed || isSubmitting) {
+    if (!trimmed || isBusy) {
       return;
     }
 
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
+    const sender = self?.info.name.trim();
+    if (!sender) {
+      setSendError("Your room profile is still loading. Please try again.");
+      return;
+    }
+
+    const message: AiChatMessage = {
+      sender,
       role: "user",
       content: trimmed,
+      timestamp: Date.now(),
     };
 
-    setMessages((current) => [...current, userMessage]);
-    setDraft("");
-    setIsSubmitting(true);
+    setIsStartingRun(true);
+    setSendError(null);
+    const messageId = crypto.randomUUID();
+    let messagePersisted = false;
+    setOptimisticMessages((current) => [...current, { ...message, id: messageId }]);
 
     try {
+      await createFeedMessage(AI_CHAT_FEED_ID, message, { id: messageId });
+      messagePersisted = true;
+      setDraft("");
       const response = await fetch("/api/ai/design", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmed, projectId, roomId }),
+        body: JSON.stringify({ prompt: trimmed, roomId, projectId }),
       });
-      const payload: unknown = await response.json();
-      const message =
-        payload && typeof payload === "object" && "error" in payload &&
-        typeof payload.error === "string"
-          ? payload.error
-          : response.ok
-            ? "Design task started. Ghost AI will update the shared canvas shortly."
-            : "Could not start the design task. Please try again.";
-      setMessages((current) => [
-        ...current,
-        { id: `assistant-${Date.now()}`, role: "assistant", content: message },
-      ]);
-    } catch {
-      setMessages((current) => [
-        ...current,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: "Could not reach Ghost AI. Please try again.",
-        },
-      ]);
+      const result: unknown = await response.json();
+      if (!response.ok || !result || typeof result !== "object" || !("runId" in result) || typeof result.runId !== "string") {
+        throw new Error(result && typeof result === "object" && "error" in result && typeof result.error === "string"
+          ? result.error
+          : "Could not start the design run.");
+      }
+
+      const tokenResponse = await fetch("/api/ai/design/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ runId: result.runId }),
+      });
+      const tokenResult: unknown = await tokenResponse.json();
+      if (!tokenResponse.ok || !tokenResult || typeof tokenResult !== "object" || !("token" in tokenResult) || typeof tokenResult.token !== "string") {
+        throw new Error("Could not connect to the design run.");
+      }
+
+      completedRunRef.current = null;
+      setRunId(result.runId);
+      setPublicToken(tokenResult.token);
+    } catch (error) {
+      if (!messagePersisted) {
+        setOptimisticMessages((current) => current.filter((item) => item.id !== messageId));
+      }
+      const errorMessage = error instanceof Error ? error.message : "Design request failed. Please try again.";
+      await createFeedMessage(AI_CHAT_FEED_ID, {
+        sender: "Ghost AI",
+        role: "assistant",
+        content: errorMessage,
+        timestamp: Date.now(),
+      }).catch(() => undefined);
+      setSendError(errorMessage);
     } finally {
-      setIsSubmitting(false);
+      setIsStartingRun(false);
     }
   };
 
@@ -183,11 +285,10 @@ export function AiSidebar({
                       <Sparkles className="h-5 w-5" />
                     </div>
                     <p className="mt-4 text-sm text-copy-primary">
-                      Describe the system you want to design.
+                      Describe the system you want Ghost AI to design.
                     </p>
                     <p className="mt-2 text-xs leading-relaxed text-copy-muted">
-                      Outline the core flows, data, services, or infrastructure
-                      to generate a canvas draft.
+                      Your prompt and the result are shared with everyone in this room.
                     </p>
 
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -195,7 +296,7 @@ export function AiSidebar({
                         <button
                           key={prompt}
                           type="button"
-                      onClick={() => setDraft(prompt)}
+                          onClick={() => setDraft(prompt)}
                           className="rounded-full border border-surface-border bg-subtle px-3 py-1.5 text-xs text-ai-text transition-colors hover:border-brand/50 hover:text-brand"
                         >
                           {prompt}
@@ -208,40 +309,55 @@ export function AiSidebar({
                     {messages.map((message) => (
                       <div
                         key={message.id}
+                        title={`${message.sender} · ${new Date(message.timestamp).toLocaleString()}`}
                         className={cn(
                           "max-w-[85%] rounded-2xl border px-3 py-2 text-sm leading-relaxed",
                           message.role === "user"
-                            ? "ml-auto border-2 border-brand/50 bg-brand-dim text-copy-primary"
+                            ? "ml-auto border-2 border-state-success/50 bg-state-success text-base"
                             : "mr-auto border-surface-border bg-elevated text-ai-text",
                         )}
                       >
-                        {message.content}
+                        <p className="mb-1 text-[10px] text-copy-muted">{message.sender} · {new Date(message.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>
+                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
                       </div>
                     ))}
                   </div>
                 )}
 
                 <div className="mt-3 rounded-2xl border border-surface-border bg-elevated p-2">
-                  <div className="flex items-end gap-2">
+                  <div className="relative">
                     <Textarea
                       ref={textareaRef}
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
                       onKeyDown={handleKeyDown}
+                      disabled={isBusy}
                       placeholder="Describe your architecture..."
-                      className="min-h-[72px] max-h-[160px] resize-none border-0 bg-transparent px-0 py-0 text-sm text-copy-primary placeholder:text-copy-muted focus-visible:ring-0"
+                      className="min-h-[104px] max-h-[192px] resize-none overflow-y-auto border-0 bg-transparent px-0 py-0 pr-12 pb-12 text-sm text-copy-primary placeholder:text-copy-muted focus-visible:ring-0"
                     />
 
                     <Button
                       type="button"
                       size="icon"
                       onClick={() => void handleSubmit()}
-                      className="shrink-0 rounded-xl bg-brand text-white hover:bg-brand/90"
-                      disabled={!draft.trim() || isSubmitting}
+                      className="absolute bottom-2 right-2 rounded-xl bg-state-success text-base hover:bg-state-success/90 disabled:opacity-40"
+                      disabled={!draft.trim() || isBusy}
+                      aria-label={isBusy ? "Ghost AI is working" : "Send design prompt"}
                     >
-                      <ArrowUp className="h-4 w-4" />
+                      {isBusy ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      ) : (
+                        <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                      )}
                     </Button>
                   </div>
+                  {isRunActive ? (
+                    <div className="mt-2 flex items-center gap-2 rounded-xl border border-state-success/30 bg-base px-3 py-2 text-xs text-state-success" role="status" aria-live="polite">
+                      <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden="true" />
+                      <span className="min-w-0 truncate">{latestStatus?.text ?? "Ghost AI is designing your system..."}</span>
+                    </div>
+                  ) : null}
+                  {sendError ? <p role="alert" className="mt-2 px-1 text-xs text-state-error">{sendError}</p> : null}
                 </div>
               </TabsContent>
 

@@ -200,22 +200,18 @@ export function EditorWorkspace({
         workspaceNavigation
       />
       <div className="flex min-h-0 flex-1 pt-16">
-        <section
-          aria-label="Canvas workspace"
-          className="relative flex min-w-0 flex-1 overflow-hidden bg-base"
-        >
-          <LiveblocksCanvasRoom
-            roomId={project.id}
-            onSaveStatusChange={handleSaveStatusChange}
-            onRegisterImport={registerImport}
-          />
-        </section>
-        <AiSidebar
-          isOpen={isAiSidebarOpen}
-          onClose={() => setIsAiSidebarOpen(false)}
-          projectId={project.id}
+        <LiveblocksCanvasRoom
           roomId={project.id}
-        />
+          onSaveStatusChange={handleSaveStatusChange}
+          onRegisterImport={registerImport}
+        >
+          <AiSidebar
+            isOpen={isAiSidebarOpen}
+            onClose={() => setIsAiSidebarOpen(false)}
+            projectId={project.id}
+            roomId={project.id}
+          />
+        </LiveblocksCanvasRoom>
       </div>
 
       {dialogMode ? (

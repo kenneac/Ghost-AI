@@ -2,14 +2,15 @@
 
 ## Current Phase
 
-- Feature 22: design-agent API flow — implemented; task-triggering API, Prisma task-run tracking, and run-scoped token issuance are now in place.
+- Feature 26: design agent frontend — implementation complete; build, TypeScript, and focused ESLint checks stalled without diagnostics.
 
 ## Current Goal
 
-- The design generation backend flow and AI logic are implemented; the design agent uses OpenRouter's `nvidia/nemotron-3.5-lightning:free` model and the existing Liveblocks canvas/presence flow.
+- Feature 26 is complete. The Liveblocks auth route ensures `ai-chat` exists before room access, and the AI composer keeps scrolled text clear of its bottom-right send button.
 
 ## Completed
 
+- Feature 26 is implemented in the sidebar: prompt feed post, API trigger, scoped run subscription, active status strip, and shared completion/error messages. `git diff --check` passes; build, TypeScript, and focused ESLint commands stalled without diagnostics.
 - Added the Trigger.dev v4 project scaffold: task directory, starter task, project config, package scripts, TypeScript inclusion, and local state ignore rule. SDK and build dependencies are declared; local installation and Trigger.dev account/project credentials remain before tasks can register or run.
 
 - Canvas Delete/Backspace now removes selected graph elements through Liveblocks' dedicated onDelete mutation because the flow change callbacks ignore remove changes.
@@ -20,8 +21,15 @@
 
 - Replaced Gemini in the design agent with OpenRouter using `nvidia/nemotron-3.5-lightning:free`; updated the feature spec and removed the unused Google AI SDK dependency.
 
+- Feature 24 implementation is underway: the sidebar now shares the Liveblocks room and reads validated status from `ai-status-feed`; the existing design task publishes the generic feed payload.
+
+- Feature 24 is complete: the sidebar reads the latest validated shared status, disables prompt entry and shows loading while generation is active, and renders spinner indicators for thinking cursors. `git diff --check` passes; build, TypeScript, and focused lint commands stalled without diagnostics.
+
 ## Open Questions
 
 - None.
 
 - Liveblocks collaborator avatar labels now fall back to the authenticated user's email when first and last name and username are unavailable, before using “Anonymous”.
+
+- Composer/feed issue fix: Authenticated room setup now creates or confirms the `ai-chat` feed, including concurrent room joins. The composer button overlays the lower-right textarea with reserved padding for scrolling text.
+- Sidebar prompts render immediately with optimistic state and deduplicate against the persisted `ai-chat` feed message.

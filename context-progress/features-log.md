@@ -673,11 +673,11 @@ None.
 
 ---
 
-### Feature 23: Gemini design agent logic
+### Feature 23: OpenRouter design agent logic
 
 **Date:** 2026-10-10
 
-**Description:** Implemented prompt-driven system design generation with Gemini and real-time graph mutations in the existing Liveblocks room. Added shared AI status updates and presence, and connected the Architect sidebar to the design task API.
+**Description:** Implemented prompt-driven system design generation with OpenRouter's `nvidia/nemotron-3.5-lightning:free` model and real-time graph mutations in the existing Liveblocks room. Added shared AI status updates and presence, and connected the Architect sidebar to the design task API.
 
 #### New Files
 
@@ -686,8 +686,8 @@ None.
 #### Updated Files
 
 - `trigger/design-agent.ts`
-  - Uses Gemini structured output to produce validated node and edge actions and applies them to the existing React Flow Liveblocks storage maps.
-  - Publishes room status events/feed messages and expiring AI cursor/thinking presence, then clears presence when the task exits.
+  - Uses OpenRouter structured output to produce validated node and edge actions and applies them to the existing React Flow Liveblocks storage maps.
+  - Publishes shared status feed messages and expiring AI cursor/thinking presence, then clears presence when the task exits.
 - `liveblocks.config.ts`
   - Types shared AI status events and the Liveblocks storage contract.
 - `src/components/editor/liveblocks-canvas-room.tsx`
@@ -706,3 +706,92 @@ None.
 - `git diff --check` passed.
 - `npx tsc --noEmit` reports existing errors because the generated Prisma client lacks the `TaskRun` model; Prisma generation stalled without output.
 - `npm run build` was blocked by another Next.js build process holding the build lock.
+
+---
+
+### Feature 24: AI presence state
+
+**Date:** 2026-10-10
+
+**Description:** Added shared AI activity state to the existing Liveblocks room. The sidebar shows the latest validated status from `ai-status-feed`, disables prompt entry and shows a loading indicator while generation is active, and live cursor badges show a spinner when participant presence has `thinking: true`.
+
+#### New Files
+
+- `src/types/tasks.ts`
+  - Defines the Zod schema and inferred type for generic AI status feed messages, including optional `text` and task type fields.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Subscribes to the latest room feed message, validates it before display, and uses shared processing status to control the prompt and send button.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Places the sidebar under the existing `RoomProvider` so it can subscribe to feed messages.
+- `src/components/editor/editor-workspace.tsx`
+  - Renders the sidebar through the room wrapper while preserving the workspace layout.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Adds a spinner to cursor name badges for collaborators with `thinking: true` presence.
+- `trigger/design-agent.ts`
+  - Publishes design task status using the generic message schema and the canonical `ai-status-feed`.
+- `liveblocks.config.ts`
+  - Removes the unused status room event type; the feed is the shared status channel.
+- `context-progress/progress-tracker.md` and `context/progress-tracker.md`
+  - Record Feature 24 completion and verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run build`, `npx tsc --noEmit`, and focused ESLint commands stalled without diagnostics and were stopped; these checks remain unconfirmed in this environment.
+
+### Feature 25: Sidebar chat feed
+
+**Date:** 2026-10-10
+
+**Description:** Added collaborative room chat to the AI sidebar using a dedicated Liveblocks `ai-chat` feed, separate from AI status updates. Messages are validated before display and include sender and timestamp details; send failures show an inline error.
+
+#### New Files
+
+- `src/types/tasks.ts`
+  - Defines Zod schemas and inferred types for AI status and chat feed payloads.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Subscribes to the room-scoped chat feed, validates and orders messages, and sends chat messages without triggering AI tasks.
+  - Displays sender and timestamp and reports feed send errors.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 25 complete and records verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npm run build` stalled without diagnostics and was interrupted.
+
+---
+
+### Feature 26: Design agent frontend
+
+**Date:** 2026-10-10
+
+**Description:** Connected the AI sidebar to the authenticated design run API and Trigger.dev realtime subscription. User prompts and AI outcomes are shared through `ai-chat`, run status is shown while active, and generated canvas changes continue to arrive through Liveblocks.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Posts prompts to `ai-chat`, starts a design run, retrieves its scoped realtime token, and subscribes with `useRealtimeRun`.
+  - Shows active run status and posts completion, task failure, or subscription errors to the shared chat feed.
+  - Uses existing green success theme tokens for user bubbles and the submit control.
+- `context-progress/progress-tracker.md`
+  - Marks Feature 26 complete and records verification status.
+- `context/progress-tracker.md`
+  - Records Feature 26 completion and verification status.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npx tsc --noEmit`, `npm run build`, and focused ESLint stalled without diagnostics and were interrupted.
+
+---
