@@ -6,7 +6,7 @@
 
 ## Current Goal
 
-- The design generation backend flow defined in the design-agent API spec is implemented without AI logic; the remaining verification note is the full Next build status in this environment.
+- The design generation backend flow and AI logic are implemented; the design agent uses OpenRouter's `nvidia/nemotron-3.5-lightning:free` model and the existing Liveblocks canvas/presence flow.
 
 ## Completed
 
@@ -17,6 +17,8 @@
 - Fixed the four current canvas/workspace issues: collaborative keyboard deletion, cursor-centered shape drops, no initial auto-fit on node insertion, and editor-home-only navbar UserButton.
 
 - Shared project sidebar entries navigate to their project from both the editor home page and workspace. Selecting a shared project closes the sidebar.
+
+- Replaced Gemini in the design agent with OpenRouter using `nvidia/nemotron-3.5-lightning:free`; updated the feature spec and removed the unused Google AI SDK dependency.
 
 ## Open Questions
 

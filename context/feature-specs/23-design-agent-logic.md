@@ -11,7 +11,7 @@ Implement the full AI design agent so a user prompt results in real-time updates
    - reuse existing Liveblocks flow and presence patterns instead of creating new ones
 
    Then implement:
-   - use Gemini (`@ai-sdk/google`) to interpret the user prompt
+   - use OpenRouter (`@openrouter/ai-sdk-provider`) with `nvidia/nemotron-3.5-lightning:free` to interpret the user prompt
    - update the canvas using the existing collaborative flow utilities
    - support actions like:
      - add node
@@ -35,7 +35,7 @@ Implement the full AI design agent so a user prompt results in real-time updates
    - clear AI presence when the task finishes
 
 ## Dependencies
-   All packages are already installed.`GEMINI_API_KEY` is already in `.env.local`.
+   `@openrouter/ai-sdk-provider` is installed. `OPEN_ROUTER_API_KEY` must be configured in `.env.local` and the Trigger.dev environment.
 
 ## Scope Limits
 

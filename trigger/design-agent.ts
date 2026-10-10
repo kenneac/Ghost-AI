@@ -1,4 +1,4 @@
-import { google } from "@ai-sdk/google";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateObject } from "ai";
 import { LiveMap, LiveObject, type JsonObject, type LsonObject } from "@liveblocks/core";
 import { Liveblocks } from "@liveblocks/node";
@@ -71,6 +71,13 @@ const AI_USER_INFO = {
 };
 const FEED_ID = "ai-activity";
 const STATUS_EVENT = "ai-status";
+const DESIGN_MODEL = "nvidia/nemotron-3.5-lightning:free";
+
+function getOpenRouterClient() {
+  const apiKey = process.env.OPEN_ROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPEN_ROUTER_API_KEY is not configured");
+  return createOpenRouter({ apiKey });
+}
 
 function getLiveblocksClient() {
   const secret = process.env.LIVEBLOCKS_SECRET_KEY;
@@ -233,8 +240,7 @@ export const designAgent = task({
       if (!payload.prompt.trim() || !payload.roomId.trim()) {
         throw new Error("A prompt and room ID are required");
       }
-      if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
-
+      const openrouter = getOpenRouterClient();
       client = getLiveblocksClient();
       await client.setPresence(payload.roomId, {
         userId: AI_USER_ID,
@@ -252,7 +258,7 @@ export const designAgent = task({
       const currentNodes = asRecord(flow?.nodes) ?? {};
       const currentEdges = asRecord(flow?.edges) ?? {};
       const result = await generateObject({
-        model: google("gemini-2.5-flash"),
+        model: openrouter(DESIGN_MODEL),
         schema: designSchema,
         system: `You are Ghost AI, a collaborative system design agent. Interpret the user's request as a sequence of canvas operations. Respect existing node and edge IDs when modifying the current design. New node IDs and edge IDs must be unique, stable, simple slugs. Use only allowed shapes and colorIndex values 0 through ${NODE_COLORS.length - 1}. Place new nodes in a readable grid with at least 220px horizontal and 140px vertical spacing, starting near x=0,y=0 or extending the current graph. Keep dimensions near 180x100. Add edges only between existing or newly added IDs. For an initial design, add nodes and edges that fully represent the requested architecture. Return actions in dependency-safe order: nodes before edges, and edge deletions before node deletion.`,
         prompt: `User request:\n${payload.prompt}\n\nCurrent canvas nodes:\n${JSON.stringify(currentNodes)}\n\nCurrent canvas edges:\n${JSON.stringify(currentEdges)}\n\nReturn concise status summary and operations.`,
