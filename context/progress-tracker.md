@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-- Spec task runtime fix — OpenRouter is used for generation, and Prisma Client was regenerated from the configured multi-file schema so the ProjectSpec delegate exists. TypeScript and focused ESLint remain stalled without diagnostics.
+- Spec generation and preview flow: preview content scrolls inside a fixed-height dialog, with download and close controls kept visible and actionable.
 
 ## Current Goal
 
@@ -25,6 +25,9 @@
 
 - Feature 24 is complete: the sidebar reads the latest validated shared status, disables prompt entry and shows loading while generation is active, and renders spinner indicators for thinking cursors. `git diff --check` passes; build, TypeScript, and focused lint commands stalled without diagnostics.
 - Spec task persistence fix: `prisma.projectSpec.create` failed because the generated Prisma Client predated the ProjectSpec model. Running `npx prisma generate` against the configured `prisma/` directory generated the missing delegate. No Google AI SDK references or dependency remain; spec generation uses the existing OpenRouter provider/model.
+- Spec generation failure fix: `POST /api/ai/spec` now uses Trigger.dev's `tasks.trigger` with a type-only task import, and `generate-spec` imports Prisma only at persistence time so task indexing does not construct the database client. Regenerated Prisma Client exports `PrismaClient` and `ProjectSpec`; applied migration `20261010100000_add_project_specs` to the configured PostgreSQL database with `prisma migrate deploy`.
+- Spec preview interaction fix: replaced the preview's nested ScrollArea with a bounded native overflow region inside a fixed-height dialog, keeping the footer controls out of the scrolling content. Download now uses a native attachment link and Close uses the dialog primitive's close action.
+- Spec preview Base UI warning fix: the download link is rendered with `Button nativeButton={false}`, preserving link semantics while preventing Base UI from expecting a native button element.
 
 ## Open Questions
 

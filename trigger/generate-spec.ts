@@ -5,7 +5,6 @@ import { put } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
-import { prisma } from "../lib/prisma";
 import { aiStatusMessageSchema } from "../src/types/tasks";
 
 const payloadSchema = z.object({
@@ -73,6 +72,7 @@ export const generateSpec = task({
           contentType: "text/markdown; charset=utf-8",
         },
       );
+      const { prisma } = await import("../lib/prisma");
       await prisma.projectSpec.create({
         data: {
           id: specId,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { tasks } from "@trigger.dev/sdk";
 
 import {
   apiErrorResponse,
@@ -7,7 +8,7 @@ import {
 } from "@/lib/project-api";
 import { getProjectForCurrentIdentity } from "@/lib/project-access";
 import { prisma } from "../../../../../lib/prisma";
-import { generateSpec } from "../../../../../trigger/generate-spec";
+import type { generateSpec } from "../../../../../trigger/generate-spec";
 
 const requestSchema = z.object({
   roomId: z.string().trim().min(1),
@@ -28,7 +29,8 @@ export async function POST(request: Request) {
   const { project } = await getProjectForCurrentIdentity(parsed.data.roomId);
   if (!project) return apiErrorResponse(403, "Forbidden");
 
-  const run = await generateSpec.trigger(
+  const run = await tasks.trigger<typeof generateSpec>(
+    "generate-spec",
     { ...parsed.data, projectId: project.id },
     { tags: [`project:${project.id}`, `user:${userId}`] },
   );

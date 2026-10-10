@@ -6,7 +6,7 @@ import { useRealtimeRun } from "@trigger.dev/react-hooks";
 import { ArrowUp, Bot, Download, FileText, LoaderCircle, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -543,21 +543,21 @@ export function AiSidebar({
         </div>
       ) : null}
       <Dialog open={selectedSpec !== null} onOpenChange={(open) => { if (!open) setSelectedSpec(null); }}>
-        <DialogContent className="flex max-h-[90dvh] flex-col overflow-hidden rounded-3xl border border-surface-border bg-surface text-copy-primary sm:max-w-3xl">
-          <DialogHeader>
+        <DialogContent showCloseButton={false} className="flex h-[90dvh] max-h-[90dvh] min-h-0 flex-col overflow-hidden rounded-3xl border border-surface-border bg-surface text-copy-primary sm:max-w-3xl">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="truncate pr-8 text-lg">{selectedSpec?.filename ?? "Specification"}</DialogTitle>
             <DialogDescription className="text-copy-muted">
               {selectedSpec ? new Date(selectedSpec.createdAt).toLocaleString() : ""}
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="min-h-0 flex-1 rounded-2xl border border-surface-border bg-elevated p-4">
+          <div role="region" aria-label="Specification preview" className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-surface-border bg-elevated p-4">
             {isLoadingSpecContent ? <p className="text-sm text-copy-muted" role="status">Loading specification…</p> : null}
             {specContentError ? <p className="text-sm text-state-error" role="alert">{specContentError}</p> : null}
             {specContent !== null && !isLoadingSpecContent ? <SpecMarkdown content={specContent} /> : null}
-          </ScrollArea>
-          <div className="flex justify-end gap-2">
-            {selectedSpec ? <Button type="button" variant="outline" onClick={() => window.location.assign(`/api/projects/${projectId}/specs/${selectedSpec.id}/download`)}><Download />Download</Button> : null}
-            <Button type="button" variant="ghost" onClick={() => setSelectedSpec(null)}>Close</Button>
+          </div>
+          <div className="flex shrink-0 justify-end gap-2 pt-2">
+            {selectedSpec ? <Button nativeButton={false} variant="outline" render={<a href={`/api/projects/${projectId}/specs/${selectedSpec.id}/download`} download={selectedSpec.filename} />}><Download />Download</Button> : null}
+            <DialogClose render={<Button type="button" variant="ghost" />}>Close</DialogClose>
           </div>
         </DialogContent>
       </Dialog>
