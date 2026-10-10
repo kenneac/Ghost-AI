@@ -4,12 +4,12 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 26: design agent frontend — implementation complete; build, TypeScript, and focused ESLint checks stalled without diagnostics.
+- Spec generation persistence fix — Prisma client regenerated from the configured schema directory, restoring `prisma.projectSpec.create`; TypeScript and focused ESLint still stall without diagnostics.
 
 - Feature 25: sidebar chat feed — implementation complete; `npm run build` stalled without diagnostics.
 ## Current Goal
 
-- Feature 26 also ensures `ai-chat` exists during authenticated room setup, preventing feed writes from failing on new rooms; the composer send control overlays the lower-right corner with reserved scroll padding.
+- Generated specs are privately stored in Blob and indexed by ProjectSpec. The Specs tab lists them, previews authenticated Markdown, downloads attachment responses, and starts generation from the saved canvas and room chat.
 
 ## Completed
 
@@ -31,14 +31,17 @@ Update this file whenever the current phase, active feature, or implementation s
 - Feature 21: authenticated Vercel Blob canvas persistence, debounced autosave, empty-room restore, and editor save status indicator; TypeScript and diff checks passed.
 - Feature 22: private Vercel Blob access — private uploads persist the pathname, and authenticated project members stream canvas data through `/api/canvas/[projectId]`.
 - Feature 24: the AI sidebar now subscribes to the latest validated `ai-status-feed` message inside the room provider, reflects shared processing status, disables the prompt input and shows send-button loading state, and adds thinking spinners to live cursor badges. The existing design task publishes the generic feed payload.
+- Feature 28: added ProjectSpec metadata and migration, private Blob persistence in the spec task, and authenticated project-scoped list, preview-content, and Markdown attachment routes.
+- Feature 29: replaced the static Specs placeholder with the project spec list, Markdown preview dialog, download actions, and Generate Spec run flow.
+- Spec task runtime fix: regenerated Prisma Client with `npx prisma generate` so models in `prisma/models/` are included and the `projectSpec` delegate exists at runtime. OpenRouter is already used by both design and spec generation; no Google AI SDK references or dependency were found.
 
 ## In Progress
 
-- None.
+- None. Features 28 and 29 implementation is complete; `git diff --check` passes.
 
 ## Next Up
 
-- Re-run `npm run build`, `npx tsc --noEmit`, and focused ESLint when the environment allows child processes to complete; prior attempts stalled without diagnostics. The known stale generated Prisma `TaskRun` delegate issue remains an existing verification concern.
+- Restart the Trigger.dev dev worker so it loads the regenerated client, then re-run TypeScript, focused ESLint, and production build when the environment allows them to complete; those commands stalled without diagnostics.
 
 ## Open Questions
 

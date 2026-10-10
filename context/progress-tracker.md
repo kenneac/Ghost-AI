@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-- Feature 26: design agent frontend — implementation complete; build, TypeScript, and focused ESLint checks stalled without diagnostics.
+- Spec task runtime fix — OpenRouter is used for generation, and Prisma Client was regenerated from the configured multi-file schema so the ProjectSpec delegate exists. TypeScript and focused ESLint remain stalled without diagnostics.
 
 ## Current Goal
 
@@ -24,6 +24,7 @@
 - Feature 24 implementation is underway: the sidebar now shares the Liveblocks room and reads validated status from `ai-status-feed`; the existing design task publishes the generic feed payload.
 
 - Feature 24 is complete: the sidebar reads the latest validated shared status, disables prompt entry and shows loading while generation is active, and renders spinner indicators for thinking cursors. `git diff --check` passes; build, TypeScript, and focused lint commands stalled without diagnostics.
+- Spec task persistence fix: `prisma.projectSpec.create` failed because the generated Prisma Client predated the ProjectSpec model. Running `npx prisma generate` against the configured `prisma/` directory generated the missing delegate. No Google AI SDK references or dependency remain; spec generation uses the existing OpenRouter provider/model.
 
 ## Open Questions
 

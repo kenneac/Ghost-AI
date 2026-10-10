@@ -795,3 +795,96 @@ None.
 - `npx tsc --noEmit`, `npm run build`, and focused ESLint stalled without diagnostics and were interrupted.
 
 ---
+
+### Feature 27: Spec generation flow
+
+**Date:** 2026-10-10
+
+**Description:** Added the authenticated spec generation API flow with project access derived from the existing room ID contract, Prisma run ownership tracking, and run-scoped one-hour public token issuance. Updated the Trigger.dev task to generate Markdown through OpenRouter and publish realtime status with metadata and structured logs.
+
+#### New Files
+
+- `src/app/api/ai/spec/route.ts`
+  - Validates spec input, resolves project membership from `roomId`, starts `generate-spec`, and records the run owner in Prisma.
+- `src/app/api/ai/spec/token/route.ts`
+  - Validates the run ID, enforces run ownership, and issues a run-scoped token expiring in one hour.
+- `trigger/generate-spec.ts`
+  - Validates task input, creates a Markdown specification through OpenRouter, tracks status in Trigger metadata and the Liveblocks feed, and returns plain Markdown.
+
+#### Updated Files
+
+- `context-progress/progress-tracker.md`
+  - Records Feature 27 implementation and verification status.
+- `context-progress/features-log.md`
+  - Adds this Feature 27 record.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npx tsc --noEmit` and focused ESLint stalled without diagnostics; verification remains unconfirmed.
+
+This feature was re-read and rechecked on 2026-10-10; no implementation changes were needed.
+
+---
+
+### Feature 28: Spec persistence and secure retrieval
+
+**Date:** 2026-10-10
+
+**Description:** Added ProjectSpec metadata linked to each project and private Vercel Blob persistence for generated Markdown. Added authenticated project-scoped routes to list spec metadata, read preview content, and download Markdown attachments.
+
+#### New Files
+
+- `prisma/migrations/20261010100000_add_project_specs/migration.sql`
+  - Creates the project_specs table, project relation, and project/date index.
+- `src/app/api/projects/[projectId]/specs/route.ts`
+  - Lists the accessible project's spec IDs, filenames, and creation dates.
+- `src/app/api/projects/[projectId]/specs/[specId]/route.ts`
+  - Streams private Markdown content to authorized project members for preview.
+- `src/app/api/projects/[projectId]/specs/[specId]/download/route.ts`
+  - Streams the authorized spec as a Markdown attachment.
+
+#### Updated Files
+
+- `prisma/models/project.prisma`
+  - Adds ProjectSpec metadata and its cascading project relation.
+- `trigger/generate-spec.ts`
+  - Stores generated Markdown in a private Blob and records its pathname in ProjectSpec.
+- `context-progress/progress-tracker.md`
+  - Records Features 28 and 29 implementation and verification state.
+- `context-progress/features-log.md`
+  - Adds the Feature 28 and Feature 29 implementation records.
+
+#### Verification
+
+- `git diff --check` passed.
+- Prisma client generation, TypeScript, focused ESLint, and production build stalled without diagnostics; verification remains unconfirmed.
+
+---
+
+### Feature 29: Spec sidebar integration
+
+**Date:** 2026-10-10
+
+**Description:** Connected the Specs tab to saved specs with a compact project list, an accessible Markdown preview dialog, and downloads through the authenticated endpoint. The Generate Spec control starts a task using the saved canvas and current room chat, then refreshes the list after completion.
+
+#### New Files
+
+- `src/components/editor/spec-markdown.tsx`
+  - Renders common Markdown blocks and inline formatting as safe React elements.
+
+#### Updated Files
+
+- `src/components/editor/ai-sidebar.tsx`
+  - Loads project spec metadata, fetches preview content on demand, provides download actions, and starts spec generation with realtime completion handling.
+- `context-progress/progress-tracker.md`
+  - Records Features 28 and 29 implementation and verification state.
+- `context-progress/features-log.md`
+  - Adds the Feature 28 and Feature 29 implementation records.
+
+#### Verification
+
+- `git diff --check` passed.
+- Prisma client generation, TypeScript, focused ESLint, and production build stalled without diagnostics; verification remains unconfirmed.
+
+---
