@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 22: design-agent API flow — implemented; task-triggering API, Prisma task-run tracking, and run-scoped token issuance are now in place.
+- Feature 23: design-agent logic — implementation complete; verification is blocked by stale generated Prisma types and an orphaned Next.js build lock.
 
 ## Current Goal
 
-- The design generation backend flow defined in `context/feature-specs/22-design-agent-api.md` is implemented without AI logic; the remaining verification note is the full Next build status in this environment.
+- Feature 23 is implemented with Gemini, the existing Liveblocks React Flow storage, shared AI status events/feed, and AI presence. Refresh the Prisma client and clear the stale build lock before final verification.
 
 ## Completed
 
@@ -34,6 +34,8 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
+- Re-run Prisma client generation and `npm run build` after the stale process/lock clears; current TypeScript errors are limited to the existing `TaskRun` Prisma delegates.
+
 ## Open Questions
 
 - Feature 08 uses `/editor/[roomId]`, but no room-to-project mapping exists yet. The current route uses the project ID as the segment; canvas/collaboration work must define the durable room ID contract.
@@ -50,6 +52,8 @@ Update this file whenever the current phase, active feature, or implementation s
 - The Feature 05 migration is applied to the configured database with `prisma migrate deploy`.
 
 ## Session Notes
+
+- Feature 23 adds validated Gemini design actions to the Trigger.dev task, applies add/move/resize/update/delete node and edge operations through the existing `flow` Liveblocks storage maps, publishes status room events and feed messages, and sets an AI cursor/thinking presence that clears on completion. The AI sidebar submits to the existing design API, and the canvas cursor label displays AI thinking status. `npx tsc --noEmit` reports only the existing generated Prisma client missing the `TaskRun` model; Prisma CLI generation hangs in this environment. `npm run build` could not start because another Next build process owns the lock.
 
 - Feature 22 sets the canvas upload to private, persists `blob.pathname` in the existing mapped Prisma column, and adds an authenticated stream route that resolves the pathname only from the accessible project record. The editor now loads through that route. `@vercel/blob` 2.8.1 already meets the 2.3 requirement. Prisma Client generation, `npx tsc --noEmit`, and `git diff --check` passed; no database migration or environment edits were needed.
 

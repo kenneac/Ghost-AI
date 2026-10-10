@@ -24,13 +24,18 @@ const starterPrompts = [
 export function AiSidebar({
   isOpen,
   onClose,
+  projectId,
+  roomId,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  projectId: string;
+  roomId: string;
 }) {
   const [activeTab, setActiveTab] = useState<AiTabValue>("architect");
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const chatAreaRef = useRef<HTMLDivElement | null>(null);
 
@@ -53,10 +58,10 @@ export function AiSidebar({
     });
   }, [messages]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmed = draft.trim();
 
-    if (!trimmed) {
+    if (!trimmed || isSubmitting) {
       return;
     }
 
@@ -66,21 +71,46 @@ export function AiSidebar({
       content: trimmed,
     };
 
-    const assistantMessage: ChatMessage = {
-      id: `assistant-${Date.now() + 1}`,
-      role: "assistant",
-      content:
-        "I can help turn this into a structured architecture. Add the system boundaries, runtime, and critical integrations, and I’ll map them to a canvas proposal.",
-    };
-
-    setMessages((current) => [...current, userMessage, assistantMessage]);
+    setMessages((current) => [...current, userMessage]);
     setDraft("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/ai/design", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: trimmed, projectId, roomId }),
+      });
+      const payload: unknown = await response.json();
+      const message =
+        payload && typeof payload === "object" && "error" in payload &&
+        typeof payload.error === "string"
+          ? payload.error
+          : response.ok
+            ? "Design task started. Ghost AI will update the shared canvas shortly."
+            : "Could not start the design task. Please try again.";
+      setMessages((current) => [
+        ...current,
+        { id: `assistant-${Date.now()}`, role: "assistant", content: message },
+      ]);
+    } catch {
+      setMessages((current) => [
+        ...current,
+        {
+          id: `assistant-${Date.now()}`,
+          role: "assistant",
+          content: "Could not reach Ghost AI. Please try again.",
+        },
+      ]);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      handleSubmit();
+      void handleSubmit();
     }
   };
 
@@ -165,7 +195,7 @@ export function AiSidebar({
                         <button
                           key={prompt}
                           type="button"
-                          onClick={() => setDraft(prompt)}
+                      onClick={() => setDraft(prompt)}
                           className="rounded-full border border-surface-border bg-subtle px-3 py-1.5 text-xs text-ai-text transition-colors hover:border-brand/50 hover:text-brand"
                         >
                           {prompt}
@@ -205,9 +235,9 @@ export function AiSidebar({
                     <Button
                       type="button"
                       size="icon"
-                      onClick={handleSubmit}
+                      onClick={() => void handleSubmit()}
                       className="shrink-0 rounded-xl bg-brand text-white hover:bg-brand/90"
-                      disabled={!draft.trim()}
+                      disabled={!draft.trim() || isSubmitting}
                     >
                       <ArrowUp className="h-4 w-4" />
                     </Button>

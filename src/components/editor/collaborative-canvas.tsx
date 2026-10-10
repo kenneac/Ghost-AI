@@ -303,6 +303,7 @@ function CanvasLiveCursors() {
 
         const color = member.info?.color ?? "#00c8d4";
         const name = member.info?.name ?? "Collaborator";
+        const isThinking = member.presence?.thinking === true;
 
         return (
           <div
@@ -332,7 +333,7 @@ function CanvasLiveCursors() {
                 className="rounded-full border border-surface-border px-2 py-1 text-[10px] font-medium text-copy-primary shadow-sm"
                 style={{ backgroundColor: color, color: "#080809" }}
               >
-                {name}
+                {isThinking ? `${name} · thinking` : name}
               </span>
             </div>
           </div>

@@ -1,3 +1,5 @@
+import type { LiveMap, LiveObject, Lson, LsonObject } from "@liveblocks/client";
+
 declare global {
   interface Liveblocks {
     Presence: {
@@ -5,7 +7,7 @@ declare global {
       thinking: boolean;
     };
 
-    Storage: {};
+    Storage: Record<string, Lson>;
 
     UserMeta: {
       id: string;
@@ -16,8 +18,13 @@ declare global {
       };
     };
 
-    RoomEvent: {};
     ThreadMetadata: {};
+    RoomEvent: {
+      type: "ai-status";
+      status: "processing" | "complete" | "error";
+      message: string;
+      timestamp: string;
+    };
     RoomInfo: {};
   }
 }

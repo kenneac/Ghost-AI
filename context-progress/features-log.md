@@ -670,3 +670,39 @@ None.
 - `npx tsc --noEmit` passed.
 - `git diff --check` passed.
 - `npm run build` remained stuck during the optimized Next.js production build in this environment without returning diagnostics, so the full build result remains unconfirmed here.
+
+---
+
+### Feature 23: Gemini design agent logic
+
+**Date:** 2026-10-10
+
+**Description:** Implemented prompt-driven system design generation with Gemini and real-time graph mutations in the existing Liveblocks room. Added shared AI status updates and presence, and connected the Architect sidebar to the design task API.
+
+#### New Files
+
+- None.
+
+#### Updated Files
+
+- `trigger/design-agent.ts`
+  - Uses Gemini structured output to produce validated node and edge actions and applies them to the existing React Flow Liveblocks storage maps.
+  - Publishes room status events/feed messages and expiring AI cursor/thinking presence, then clears presence when the task exits.
+- `liveblocks.config.ts`
+  - Types shared AI status events and the Liveblocks storage contract.
+- `src/components/editor/liveblocks-canvas-room.tsx`
+  - Initializes the same `flow` maps consumed by `useLiveblocksFlow` for new rooms.
+- `src/components/editor/collaborative-canvas.tsx`
+  - Displays AI thinking state with shared collaborator cursors.
+- `src/components/editor/editor-workspace.tsx`
+  - Passes project and room identifiers to the Architect sidebar.
+- `src/components/editor/ai-sidebar.tsx`
+  - Submits prompts to the authenticated design API and reports task start/errors in the chat.
+- `context-progress/progress-tracker.md`
+  - Records implementation state and outstanding verification blockers.
+
+#### Verification
+
+- `git diff --check` passed.
+- `npx tsc --noEmit` reports existing errors because the generated Prisma client lacks the `TaskRun` model; Prisma generation stalled without output.
+- `npm run build` was blocked by another Next.js build process holding the build lock.
